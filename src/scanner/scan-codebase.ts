@@ -396,8 +396,8 @@ export function parseArgs(argv: string[]): CliArgs {
       args.format = value;
     } else if (arg === "--max-tokens") {
       const value = argv[++index];
-      const parsed = Number.parseInt(value ?? "", 10);
-      if (!value || !Number.isFinite(parsed)) {
+      const parsed = Number(value);
+      if (!value || !Number.isSafeInteger(parsed) || parsed < 1) {
         throw new Error(`argument --max-tokens: invalid int value: '${value ?? ""}'`);
       }
       args.maxTokens = parsed;

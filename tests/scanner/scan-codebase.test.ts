@@ -112,6 +112,9 @@ test("parses cli arguments and reports invalid choices", () => {
   });
 
   expect(() => parseArgs(["--format", "xml"])).toThrow(/invalid choice/);
+  expect(() => parseArgs(["--max-tokens", "0"])).toThrow(/invalid int value/);
+  expect(() => parseArgs(["--max-tokens", "-1"])).toThrow(/invalid int value/);
+  expect(() => parseArgs(["--max-tokens", "12abc"])).toThrow(/invalid int value/);
 });
 
 test("matches default ignore patterns by basename", () => {
