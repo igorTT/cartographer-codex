@@ -1,71 +1,96 @@
-# Cartographer
+# Cartodex
 
-<img width="640" height="360" alt="claudecartographer" src="https://github.com/user-attachments/assets/542818c6-fc2b-41a6-915d-cf196447f346" />
+Cartodex is a Codex-first port of Cartographer. It initializes repository-local
+Codex assets that help map a codebase with a skill-driven workflow: scan the
+repository, delegate focused analysis to subagents, synthesize their reports,
+and write `docs/CARTODEX_MAP.md`.
 
+Cartodex is distributed as an npm package, not as a Codex plugin.
 
-A Claude Code plugin that maps and documents codebases of any size using parallel AI subagents.
+## Install
 
-## Installation
+Run this inside the git repository you want to map:
 
-**Step 1:** Add the marketplace to Claude Code:
-
-```
-/plugin marketplace add kingbootoshi/cartographer
-```
-
-**Step 2:** Install the plugin:
-
-```
-/plugin install cartographer
+```bash
+npx cartodex init
 ```
 
-**Step 3:** Restart Claude Code (may be required for the skill to load)
+The command installs:
 
-**Step 4:** Use it:
+```text
+.agents/skills/cartodex/
+  SKILL.md
+  resources/
+    cartodex-map-structure.md
+    subagent-report-format.md
+  scripts/
+    scan-codebase.mjs
 
+.codex/agents/
+  cartodex-scout.toml
+
+AGENTS.md
 ```
-/cartographer
+
+Then open a fresh Codex thread so the repo-local skill and project agent are
+loaded, and ask:
+
+```text
+Use Cartodex to map this codebase.
 ```
 
-Or just say "map this codebase" and it will trigger automatically.
+## Init Behavior
 
-## What it Does
+`init` is safe to rerun:
 
-Cartographer orchestrates multiple Sonnet subagents to analyze your entire codebase in parallel, then synthesizes their findings into:
+- Missing Cartodex-managed files are restored.
+- Current files are left unchanged.
+- Changed managed files are not overwritten unless `--force` is provided.
+- Existing unrelated `AGENTS.md` content is preserved.
 
-- `docs/CODEBASE_MAP.md` - Detailed architecture map with file purposes, dependencies, data flows, and navigation guides
-- Updates `CLAUDE.md` with a summary pointing to the map
+Useful commands:
 
-## How it Works
+```bash
+npx cartodex init
+npx cartodex init --check
+npx cartodex init --force
+```
 
-1. Runs a scanner script to get file tree with token counts (respects .gitignore)
-2. Plans how to split work across subagents based on token budgets
-3. Spawns Sonnet subagents in parallel - each analyzes a portion of the codebase
-4. Synthesizes all subagent reports into comprehensive documentation
+`--check` performs a dry run and exits with `0` only when installed Cartodex
+assets are current.
 
-## Update Mode
+## How It Works
 
-If `docs/CODEBASE_MAP.md` already exists, Cartographer will:
+The installed skill runs:
 
-1. Check git history for changes since last mapping
-2. Only re-analyze changed modules
-3. Merge updates with existing documentation
+```bash
+node .agents/skills/cartodex/scripts/scan-codebase.mjs . --format json
+```
 
-Just run `/cartographer` again to update.
+The scanner respects common generated/dependency ignores and the repository
+root `.gitignore`, skips binary and very large files, and estimates tokens with
+`js-tiktoken`. The skill uses scanner output to plan parallel subagent
+assignments, then writes or updates `docs/CARTODEX_MAP.md` using the installed
+map structure resource.
 
-## Token Usage
+If `docs/CARTODEX_MAP.md` already exists, Cartodex uses its `last_mapped`
+frontmatter plus git history when available to focus update work on changed
+areas.
 
-⚠️ **NOTE:** This skill spawns Sonnet subagents for accurate, reliable analysis. Depending on codebase size, this can use significant tokens. Be mindful of your usage.
+## Scout Agent
 
-You can ask Claude to use Haiku subagents instead for a cheaper run, but accuracy may suffer on complex codebases.
+`init` installs `.codex/agents/cartodex-scout.toml`, a read-only project agent
+for narrow codebase exploration tasks. The scout prompt is an original
+Codex-specific prompt written for Cartodex; it does not vendor text from
+third-party agent prompts.
 
-## Requirements
+## Attribution
 
-- tiktoken (for token counting): `pip install tiktoken` or `uv pip install tiktoken`
+Cartodex is adapted from the original Cartographer project and keeps upstream
+attribution clear.
 
-## Full Documentation
-
-See [plugins/cartographer/README.md](plugins/cartographer/README.md) for detailed documentation.
+If Cartodex helped you, consider starring the original project:
+https://github.com/kingbootoshi/cartographer - please!
 
 ## License
 

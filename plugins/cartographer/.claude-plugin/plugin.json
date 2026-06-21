@@ -1,8 +1,0 @@
-{
-  "name": "cartographer",
-  "description": "Maps and documents codebases of any size using parallel AI subagents",
-  "author": {
-    "name": "Bootoshi",
-    "url": "https://github.com/kingbootoshi"
-  }
-}
