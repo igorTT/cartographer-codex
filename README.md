@@ -1,9 +1,9 @@
 # Cartodex
 
-Cartodex is a Codex-first port of Cartographer. It initializes repository-local
-Codex assets that help map a codebase with a skill-driven workflow: scan the
-repository, delegate focused analysis to subagents, synthesize their reports,
-and write `docs/CARTODEX_MAP.md`.
+Cartodex is a standalone Codex-first package for mapping codebases. It
+initializes repository-local Codex assets that help map a codebase with a
+skill-driven workflow: scan the repository, delegate focused analysis to
+subagents, synthesize their reports, and write `docs/CARTODEX_MAP.md`.
 
 Cartodex is distributed as an npm package, not as a Codex plugin.
 
@@ -86,8 +86,9 @@ third-party agent prompts.
 
 ## Attribution
 
-Cartodex is adapted from the original Cartographer project and keeps upstream
-attribution clear.
+Cartodex is independently maintained as a Codex/npm package by Igor TT. It is
+adapted from the original Cartographer project and keeps upstream attribution
+clear.
 
 If Cartodex helped you, consider starring the original project:
 https://github.com/kingbootoshi/cartographer - please!
