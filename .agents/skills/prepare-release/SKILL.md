@@ -39,14 +39,19 @@ Use this skill for repository release preparation. Follow the repository's local
    - Use an imperative or version-oriented commit message matching repository history, such as `v1.2.3: Prepare release`.
    - Push the working branch.
 
-6. Merge to the primary branch.
+6. Merge to the primary branch, or open a release PR.
    - Use the repository's primary branch, usually `main`, unless the user or repo says otherwise.
    - Switch to the primary branch, update it with `git pull --ff-only`, then prefer a fast-forward merge from the release branch.
    - Push the primary branch after a successful merge.
+   - If the primary branch is protected or rejects direct pushes, do not force-push or bypass protection. Open a PR from the release branch to the primary branch instead.
+   - If repository policy blocks immediate merge because review, checks, or other requirements are pending, leave the PR open and report the blocker.
+   - If auto-merge is unavailable or disabled, report that manual merge is required after branch protection requirements pass.
+   - If a local fast-forward merge succeeded but the push was rejected by branch protection, treat the remote primary branch as the source of truth and leave tagging for after the PR is merged.
 
 7. Tag the release.
    - Match existing tag style. If prior tags are lightweight `vX.Y.Z`, create the same style.
-   - Push the tag.
+   - Create and push the tag only after the release commit is present on the remote primary branch.
+   - If the release PR is still open or blocked, do not create the tag yet. Report the pending tag name and the condition required before tagging.
 
 8. Prepare to publish.
    - Confirm `npm pack --dry-run` or the equivalent package dry-run passes and report package name, version, and notable tarball details.
@@ -68,7 +73,8 @@ Keep the release handoff concise. Include:
 - target version
 - commit hash and message
 - pushed branch and primary branch
-- tag pushed
+- PR URL and blocker status when primary-branch protection prevents direct merge
+- tag pushed, or tag pending because the release PR is not merged yet
 - validations run
 - publish-readiness result
 - remaining local changes, if any
