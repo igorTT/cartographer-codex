@@ -19,6 +19,8 @@ Use this skill for repository release preparation. Follow the repository's local
    - Run `git branch --show-current`, `git status --short`, and inspect relevant version files.
    - Identify unrelated untracked or modified files and leave them alone.
    - If staged changes already exist, preserve them and add only release-related files.
+   - Use a release branch named `chore/release-vX.Y.Z`, for example `chore/release-v1.2.3`.
+   - Create the release branch from an up-to-date `dev` branch.
 
 3. Bump version fields consistently.
    - Update package metadata and lockfiles.
@@ -37,7 +39,7 @@ Use this skill for repository release preparation. Follow the repository's local
    - Use an imperative or version-oriented commit message matching repository history, such as `v1.2.3: Prepare release`.
    - Push the working branch.
 
-6. Merge to the release branch.
+6. Merge to the primary branch.
    - Use the repository's primary branch, usually `main`, unless the user or repo says otherwise.
    - Switch to the primary branch, update it with `git pull --ff-only`, then prefer a fast-forward merge from the release branch.
    - Push the primary branch after a successful merge.
