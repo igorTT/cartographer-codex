@@ -64,7 +64,7 @@ flowchart TD
 | --- | --- | ---: |
 | `src/cli.ts` | Creates the Commander program, sets CLI metadata, registers commands, and parses argv. | 78 |
 | `src/commands/init.ts` | Defines `cartodex init`, maps `--force` and `--check` into `initCartodex`, prints messages, and sets exit codes. | 224 |
-| `package.json` | Defines package version `0.2.0`, `bin.cartodex`, scripts, package files, Node `>=20`, runtime deps, and build/test tooling. | 465 |
+| `package.json` | Defines package version `0.2.1`, `bin.cartodex`, scripts, package files, Node `>=20`, runtime deps, and build/test tooling. | 465 |
 | `tsconfig.json` | Uses strict NodeNext ESM compilation into `dist/`. | 124 |
 | `README.md` | Public install, init, config, scanner, and mapping usage docs. | 913 |
 
