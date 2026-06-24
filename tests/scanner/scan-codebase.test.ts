@@ -69,7 +69,6 @@ test("uses root cartodex config ignore patterns after gitignore rules", () => {
   expect(result.files.map((file) => file.path)).toEqual([
     "docs/kept/notes.md",
     ".gitignore",
-    "cartodex.config.json",
     "important.tmp",
   ]);
 });

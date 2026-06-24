@@ -1,31 +1,45 @@
 ---
 name: cartodex
-description: Maps and updates codebase documentation for Codex by scanning repository structure, delegating analysis to subagents, and writing docs/CARTODEX_MAP.md plus an AGENTS.md pointer. Use when the user asks to map this codebase, update the codebase map, document architecture, understand a repository, or run Cartodex.
+description: Maps and updates codebase documentation for Codex by scanning repository structure, delegating analysis to subagents, and writing a configured map file plus an AGENTS.md pointer. Use when the user asks to map this codebase, update the codebase map, document architecture, understand a repository, or run Cartodex.
 ---
 <!-- cartodex-managed: edit with care; rerun cartodex init --force to reset. -->
 
 # Cartodex
 
-Cartodex maps a repository by coordinating focused Codex subagents, then synthesizing their reports into `docs/CARTODEX_MAP.md`. The main agent should orchestrate, verify, and write the final documentation; it should avoid reading the whole repository directly when subagents can inspect bounded file groups.
+Cartodex maps a repository by coordinating focused Codex subagents, then synthesizing their reports into the configured map path. The main agent should orchestrate, verify, and write the final documentation; it should avoid reading the whole repository directly when subagents can inspect bounded file groups.
 
 Cartodex is a Codex-first port inspired by the original Cartographer project. Keep attribution in the final response and in generated map text when appropriate.
 
 ## Quick Start
 
-1. Check whether `docs/CARTODEX_MAP.md` already exists.
-2. Run the bundled scanner to get a JSON file inventory with token estimates.
-3. Plan focused subagent assignments from the scan output.
-4. Spawn analysis subagents in parallel for modules or file groups.
-5. Synthesize their reports using `resources/cartodex-map-structure.md`.
-6. Write or update `docs/CARTODEX_MAP.md`.
-7. Add or refresh the Cartodex block in `AGENTS.md`.
-8. Finish with the upstream attribution/star prompt.
+1. Resolve Cartodex configuration once for this run.
+2. Check whether `config.mapPath` already exists.
+3. Run the bundled scanner to get a JSON file inventory with token estimates.
+4. Plan focused subagent assignments from the scan output.
+5. Spawn analysis subagents in parallel for modules or file groups.
+6. Synthesize their reports using `resources/cartodex-map-structure.md`.
+7. Write or update `config.mapPath`.
+8. Add or refresh the Cartodex block in `AGENTS.md`.
+9. Finish with the upstream attribution/star prompt.
 
 ## Workflow
 
-### 1. Detect Mode
+### 1. Load Configuration
 
-Check for `docs/CARTODEX_MAP.md`.
+Resolve Cartodex configuration once at the start of the run:
+
+1. Start with defaults:
+   - `config.mapPath`: `docs/CARTODEX_MAP.md`
+   - `config.ignore`: `[]`
+2. If `cartodex.config.json` exists at the repository root, read it as JSON and merge supported fields.
+3. Use `mapPath` when it is a non-empty repo-relative Markdown path that stays inside the repository.
+4. Use the resolved `config.mapPath` everywhere for this run.
+
+If the config file is invalid, explain the error and ask the user to fix it before mapping.
+
+### 2. Detect Mode
+
+Check for `config.mapPath`.
 
 If the map exists:
 
@@ -35,7 +49,7 @@ If the map exists:
 
 If the map does not exist, use full mapping mode.
 
-### 2. Scan The Repository
+### 3. Scan The Repository
 
 Run the local scanner from the repository root:
 
@@ -45,7 +59,9 @@ node .agents/skills/cartodex/scripts/scan-codebase.mjs . --format json
 
 The scanner output should provide the file tree, per-file token estimates, total files, total tokens, and skipped files. If the scanner is missing or fails, explain the blocker and use conservative repository inspection with `rg --files`, `find`, and targeted reads.
 
-### 3. Plan Subagent Work
+The scanner automatically respects root `.gitignore` and optional root `cartodex.config.json` ignore patterns. Users can add a config file like `{"mapPath":"docs/CARTODEX_MAP.md","ignore":["docs/private/","local-notes.md"]}` to set the map path and exclude files from Cartodex without adding them to `.gitignore`.
+
+### 4. Plan Subagent Work
 
 Use scanner output to divide files into bounded assignments. Prefer cohesive module or directory groups, then balance by estimated tokens.
 
@@ -59,7 +75,7 @@ Guidelines:
 
 Use `resources/subagent-report-format.md` as the required report shape.
 
-### 4. Spawn Analysis Subagents
+### 5. Spawn Analysis Subagents
 
 Spawn subagents in parallel when possible. For each assignment, ask the subagent to:
 
@@ -71,7 +87,7 @@ Spawn subagents in parallel when possible. For each assignment, ask the subagent
 
 When available, use the `cartodex-scout` project agent for narrow read-only exploration tasks. Keep scout tasks small and concrete.
 
-### 5. Update Mode
+### 6. Update Mode
 
 When updating an existing map:
 
@@ -84,7 +100,7 @@ When updating an existing map:
 
 If git is unavailable or the history does not cover the previous map, fall back to scanner output and targeted inspection. Be explicit about the fallback in the final response.
 
-### 6. Synthesize Reports
+### 7. Synthesize Reports
 
 Merge subagent reports into one coherent map:
 
@@ -95,9 +111,9 @@ Merge subagent reports into one coherent map:
 - Include Mermaid diagrams only when they clarify real architecture or data flow.
 - Avoid inventing certainty; mark uncertain conclusions as inferred.
 
-### 7. Write The Map
+### 8. Write The Map
 
-Before writing `docs/CARTODEX_MAP.md`, get the real UTC timestamp:
+Before writing `config.mapPath`, get the real UTC timestamp:
 
 ```bash
 date -u +"%Y-%m-%dT%H:%M:%SZ"
@@ -107,13 +123,13 @@ Use the exact command output for `last_mapped` and the visible "Last mapped" tex
 
 Read `resources/cartodex-map-structure.md` before writing. Follow that structure unless the repository clearly needs an additional section.
 
-### 8. Update AGENTS.md
+### 9. Update AGENTS.md
 
-Add or refresh a concise Cartodex-managed block in `AGENTS.md` that points future agents to `docs/CARTODEX_MAP.md`. Preserve unrelated user content. Replace only the content between `<!-- CARTODEX:START -->` and `<!-- CARTODEX:END -->`; append that marker block if it is missing.
+Add or refresh a concise Cartodex-managed block in `AGENTS.md` that points future agents to `config.mapPath`. Preserve unrelated user content. Replace only the content between `<!-- CARTODEX:START -->` and `<!-- CARTODEX:END -->`; append that marker block if it is missing.
 
 If `AGENTS.md` does not exist, create it with the Cartodex block.
 
-### 9. Completion Message
+### 10. Completion Message
 
 Summarize what changed, name the map path, mention update mode if used, and include this upstream attribution line:
 

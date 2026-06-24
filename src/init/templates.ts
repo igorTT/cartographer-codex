@@ -1,8 +1,10 @@
 import { readFileSync } from "node:fs";
 import { dirname, join } from "node:path";
 import { fileURLToPath } from "node:url";
+import { DEFAULT_MAP_PATH } from "../config.js";
 
 export const MANAGED_FILE_MARKER = "cartodex-managed";
+export const MAP_PATH_PLACEHOLDER = "{{mapPath}}";
 
 export const AGENTS_SECTION_START = "<!-- CARTODEX:START -->";
 export const AGENTS_SECTION_END = "<!-- CARTODEX:END -->";
@@ -74,7 +76,12 @@ export const CARTODEX_SCOUT_AGENT_TEMPLATE = withManagedMarker(
   `# ${MANAGED_FILE_MARKER}: edit with care; rerun cartodex init --force to reset.`
 );
 
-export const AGENTS_CARTODEX_SECTION = readTemplate("AGENTS.cartodex.md").trimEnd();
+export const AGENTS_CARTODEX_SECTION_TEMPLATE = readTemplate("AGENTS.cartodex.md").trimEnd();
+export const AGENTS_CARTODEX_SECTION = renderAgentsCartodexSection(DEFAULT_MAP_PATH);
+
+export function renderAgentsCartodexSection(mapPath: string): string {
+  return AGENTS_CARTODEX_SECTION_TEMPLATE.replaceAll(MAP_PATH_PLACEHOLDER, mapPath);
+}
 
 export const INIT_TEMPLATES: InitTemplate[] = [
   {

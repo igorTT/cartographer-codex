@@ -46,5 +46,5 @@ Analysis subagents should return markdown in this format. Keep reports factual, 
 
 ## Recommended Map Updates
 
-[Specific points the orchestrator should include in docs/CARTODEX_MAP.md.]
+[Specific points the orchestrator should include in the configured Cartodex map.]
 ```

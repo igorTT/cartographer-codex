@@ -1,14 +1,15 @@
 import { mkdir, readFile, writeFile } from "node:fs/promises";
 import { dirname, join } from "node:path";
 import {
-  AGENTS_CARTODEX_SECTION,
   AGENTS_SECTION_END,
   AGENTS_SECTION_START,
   INIT_TEMPLATES,
   MANAGED_FILE_MARKER,
+  renderAgentsCartodexSection,
   type InitTemplate
 } from "./templates.js";
 import { findGitRoot } from "./repo.js";
+import { DEFAULT_MAP_PATH, loadCartodexConfig } from "../config.js";
 
 type FileStatus = "current" | "missing" | "stale" | "conflict";
 type Operation = "checked" | "created" | "updated" | "unchanged" | "blocked";
@@ -112,7 +113,8 @@ async function analyzeAgentsFile(repoRoot: string): Promise<AnalyzedFile> {
   const targetPath = "AGENTS.md";
   const absolutePath = join(repoRoot, targetPath);
   const existing = await readOptional(absolutePath);
-  const next = upsertAgentsSection(existing ?? "");
+  const mapPath = loadCartodexConfig(repoRoot).mapPath;
+  const next = upsertAgentsSection(existing ?? "", mapPath);
   let status: FileStatus;
 
   if (existing === null || !hasAgentsSection(existing)) {
@@ -134,19 +136,21 @@ async function analyzeAgentsFile(repoRoot: string): Promise<AnalyzedFile> {
   };
 }
 
-export function upsertAgentsSection(existing: string): string {
+export function upsertAgentsSection(existing: string, mapPath = DEFAULT_MAP_PATH): string {
+  const agentsCartodexSection = renderAgentsCartodexSection(mapPath);
+
   if (!existing.trim()) {
-    return `${AGENTS_CARTODEX_SECTION}\n`;
+    return `${agentsCartodexSection}\n`;
   }
 
   if (hasValidAgentsSection(existing)) {
     const start = existing.indexOf(AGENTS_SECTION_START);
     const end = existing.indexOf(AGENTS_SECTION_END) + AGENTS_SECTION_END.length;
-    return `${existing.slice(0, start)}${AGENTS_CARTODEX_SECTION}${existing.slice(end)}`;
+    return `${existing.slice(0, start)}${agentsCartodexSection}${existing.slice(end)}`;
   }
 
   const separator = existing.endsWith("\n") ? "\n" : "\n\n";
-  return `${existing}${separator}${AGENTS_CARTODEX_SECTION}\n`;
+  return `${existing}${separator}${agentsCartodexSection}\n`;
 }
 
 function hasAgentsSection(contents: string): boolean {

@@ -71,21 +71,25 @@ The scanner respects common generated/dependency ignores, the repository root
 `.gitignore`, and optional root `cartodex.config.json` ignore patterns. It skips
 binary and very large files, and estimates tokens with `js-tiktoken`. The skill
 uses scanner output to plan parallel subagent assignments, then writes or
-updates `docs/CARTODEX_MAP.md` using the installed map structure resource.
+updates the configured map path using the installed map structure resource.
 
-To exclude files from Cartodex without adding them to `.gitignore`, create
-`cartodex.config.json` at the repository root:
+To change the generated map path or exclude files from Cartodex without adding
+them to `.gitignore`, create `cartodex.config.json` at the repository root:
 
 ```json
 {
+  "mapPath": "docs/CARTODEX_MAP.md",
   "ignore": ["docs/private/", "local-notes.md", "*.scratch.ts"]
 }
 ```
 
+`mapPath` must be a non-empty repo-relative Markdown path. It defaults to
+`docs/CARTODEX_MAP.md`.
+
 `ignore` patterns use `.gitignore`-style matching, including anchored paths,
 directory suffixes, globs, and `!` negation.
 
-If `docs/CARTODEX_MAP.md` already exists, Cartodex uses its `last_mapped`
+If the configured map path already exists, Cartodex uses its `last_mapped`
 frontmatter plus git history when available to focus update work on changed
 areas.
 

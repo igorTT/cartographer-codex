@@ -6,7 +6,8 @@ import { initCartodex, upsertAgentsSection } from "../src/init/init.js";
 import {
   AGENTS_CARTODEX_SECTION,
   CARTODEX_SKILL_TEMPLATE,
-  INIT_TEMPLATES
+  INIT_TEMPLATES,
+  renderAgentsCartodexSection
 } from "../src/init/templates.js";
 import { findGitRoot } from "../src/init/repo.js";
 
@@ -84,6 +85,36 @@ describe("initCartodex", () => {
     expect(agents).toContain(AGENTS_CARTODEX_SECTION);
   });
 
+  it("renders configured mapPath into AGENTS.md", async () => {
+    const repo = await makeRepo();
+    await writeFile(join(repo, "cartodex.config.json"), JSON.stringify({
+      mapPath: "architecture/CARTODEX.md"
+    }));
+
+    const result = await initCartodex({ cwd: repo });
+    expect(result.exitCode).toBe(0);
+
+    await expect(readFile(join(repo, "AGENTS.md"), "utf8")).resolves.toBe(
+      `${renderAgentsCartodexSection("architecture/CARTODEX.md")}\n`
+    );
+  });
+
+  it("reports AGENTS.md as stale when configured mapPath changes", async () => {
+    const repo = await makeRepo();
+    await writeFile(join(repo, "cartodex.config.json"), JSON.stringify({
+      mapPath: "docs/CARTODEX_MAP.md"
+    }));
+    await initCartodex({ cwd: repo });
+    await writeFile(join(repo, "cartodex.config.json"), JSON.stringify({
+      mapPath: "architecture/CARTODEX.md"
+    }));
+
+    const result = await initCartodex({ cwd: repo, check: true });
+
+    expect(result.exitCode).toBe(1);
+    expect(result.files.find((file) => file.targetPath === "AGENTS.md")?.status).toBe("stale");
+  });
+
   it("does not write during --check and exits 1 when assets are missing", async () => {
     const repo = await makeRepo();
 
@@ -155,5 +186,12 @@ describe("upsertAgentsSection", () => {
     const existing = `before\n\n${AGENTS_CARTODEX_SECTION.replace("Cartodex assets", "Old assets")}\n\nafter\n`;
 
     expect(upsertAgentsSection(existing)).toBe(`before\n\n${AGENTS_CARTODEX_SECTION}\n\nafter\n`);
+  });
+
+  it("replaces the managed Cartodex marker block with a custom mapPath", () => {
+    const existing = `before\n\n${AGENTS_CARTODEX_SECTION}\n\nafter\n`;
+    const expectedSection = renderAgentsCartodexSection("architecture/CARTODEX.md");
+
+    expect(upsertAgentsSection(existing, "architecture/CARTODEX.md")).toBe(`before\n\n${expectedSection}\n\nafter\n`);
   });
 });

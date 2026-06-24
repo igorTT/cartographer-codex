@@ -1,6 +1,6 @@
 # Cartodex Map Structure
 
-Use this structure for `docs/CARTODEX_MAP.md`. Replace bracketed notes with repository-specific content. Keep frontmatter keys stable so update mode can parse them.
+Use this structure for the configured Cartodex map path. Replace bracketed notes with repository-specific content. Keep frontmatter keys stable so update mode can parse them.
 
 ```markdown
 ---
