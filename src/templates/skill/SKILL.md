@@ -44,6 +44,8 @@ node .agents/skills/cartodex/scripts/scan-codebase.mjs . --format json
 
 The scanner output should provide the file tree, per-file token estimates, total files, total tokens, and skipped files. If the scanner is missing or fails, explain the blocker and use conservative repository inspection with `rg --files`, `find`, and targeted reads.
 
+The scanner automatically respects root `.gitignore` and optional root `cartodex.config.json` ignore patterns. Users can add a config file like `{"ignore":["docs/private/","local-notes.md"]}` to exclude files from Cartodex without adding them to `.gitignore`.
+
 ### 3. Plan Subagent Work
 
 Use scanner output to divide files into bounded assignments. Prefer cohesive module or directory groups, then balance by estimated tokens.

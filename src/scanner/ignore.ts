@@ -1,6 +1,12 @@
 import { readFileSync } from "node:fs";
-import { basename, relative, sep } from "node:path";
+import { basename, join, relative, sep } from "node:path";
 import { minimatch } from "minimatch";
+
+export const CARTODEX_CONFIG_FILE = "cartodex.config.json";
+
+export interface CartodexConfig {
+  ignore: string[];
+}
 
 export const DEFAULT_IGNORE = new Set([
   ".git",
@@ -97,6 +103,46 @@ export function parseGitignore(root: string): string[] {
   }
 }
 
+export function loadCartodexConfig(root: string): CartodexConfig {
+  const configPath = join(root, CARTODEX_CONFIG_FILE);
+  let rawConfig;
+
+  try {
+    rawConfig = readFileSync(configPath, "utf8");
+  } catch (error) {
+    if (error && typeof error === "object" && "code" in error && error.code === "ENOENT") {
+      return { ignore: [] };
+    }
+    throw new Error(`Failed to read ${CARTODEX_CONFIG_FILE}: ${error instanceof Error ? error.message : String(error)}`);
+  }
+
+  let parsed: unknown;
+  try {
+    parsed = JSON.parse(rawConfig);
+  } catch (error) {
+    throw new Error(`Failed to parse ${CARTODEX_CONFIG_FILE}: ${error instanceof Error ? error.message : String(error)}`);
+  }
+
+  if (!parsed || typeof parsed !== "object" || Array.isArray(parsed)) {
+    throw new Error(`${CARTODEX_CONFIG_FILE}: expected a JSON object`);
+  }
+
+  const maybeConfig = parsed as { ignore?: unknown };
+  if (maybeConfig.ignore === undefined) {
+    return { ignore: [] };
+  }
+
+  if (!Array.isArray(maybeConfig.ignore) || maybeConfig.ignore.some((pattern) => typeof pattern !== "string")) {
+    throw new Error(`${CARTODEX_CONFIG_FILE}: expected "ignore" to be an array of strings`);
+  }
+
+  return { ignore: maybeConfig.ignore };
+}
+
+export function loadIgnorePatterns(root: string): string[] {
+  return [...parseGitignore(root), ...loadCartodexConfig(root).ignore];
+}
+
 export function matchesGitignorePattern(
   path: string,
   pattern: string,
@@ -137,7 +183,7 @@ export function matchesGitignorePattern(
 export function shouldIgnore(
   path: string,
   root: string,
-  gitignorePatterns: string[],
+  ignorePatterns: string[],
   isDirectory: boolean,
 ): boolean {
   const name = basename(path);
@@ -157,12 +203,12 @@ export function shouldIgnore(
     }
   }
 
-  let ignoredByGitignore = false;
-  for (const pattern of gitignorePatterns) {
+  let ignoredByPattern = false;
+  for (const pattern of ignorePatterns) {
     if (matchesGitignorePattern(path, pattern, root, isDirectory)) {
-      ignoredByGitignore = !pattern.startsWith("!");
+      ignoredByPattern = !pattern.startsWith("!");
     }
   }
 
-  return ignoredByGitignore;
+  return ignoredByPattern;
 }

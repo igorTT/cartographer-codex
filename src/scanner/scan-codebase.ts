@@ -1,7 +1,7 @@
 import { existsSync, readdirSync, readFileSync, realpathSync, statSync } from "node:fs";
 import { basename, relative, resolve, sep } from "node:path";
 import { fileURLToPath } from "node:url";
-import { parseGitignore, shouldIgnore } from "./ignore.js";
+import { loadIgnorePatterns, shouldIgnore } from "./ignore.js";
 import { countTokens, loadEncoding, type TokenEncoding } from "./tokens.js";
 
 const MAX_FILE_BYTES = 1_000_000;
@@ -207,7 +207,7 @@ export function scanDirectory(
   maxFileTokens = 50_000,
 ): ScanResult {
   const root = resolve(rootPath);
-  const gitignorePatterns = parseGitignore(root);
+  const ignorePatterns = loadIgnorePatterns(root);
   const files: ScannedFile[] = [];
   const directories: string[] = [];
   const skipped: SkippedFile[] = [];
@@ -225,7 +225,7 @@ export function scanDirectory(
       return;
     }
 
-    if (shouldIgnore(current, root, gitignorePatterns, stat.isDirectory())) {
+    if (shouldIgnore(current, root, ignorePatterns, stat.isDirectory())) {
       return;
     }
 
@@ -457,7 +457,13 @@ export function runCli(argv = process.argv.slice(2)): number {
     return 1;
   }
 
-  const result = scanDirectory(path, encoding, args.maxTokens);
+  let result;
+  try {
+    result = scanDirectory(path, encoding, args.maxTokens);
+  } catch (error) {
+    console.error(`ERROR: ${error instanceof Error ? error.message : String(error)}`);
+    return 1;
+  }
 
   if (args.format === "json") {
     console.log(JSON.stringify(result, null, 2));

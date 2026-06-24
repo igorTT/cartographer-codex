@@ -43,6 +43,49 @@ test("scans text files while preserving default ignores and root .gitignore rule
   expect(result.directories).toContain("src");
 });
 
+test("uses root cartodex config ignore patterns after gitignore rules", () => {
+  const root = fixture();
+  mkdirSync(join(root, "docs"));
+  mkdirSync(join(root, "docs", "private"));
+  mkdirSync(join(root, "docs", "kept"));
+  writeFileSync(join(root, ".gitignore"), "*.tmp\n");
+  writeFileSync(join(root, "cartodex.config.json"), JSON.stringify({
+    ignore: [
+      "docs/private/",
+      "*.scratch.ts",
+      "/root-only.md",
+      "!important.tmp",
+    ],
+  }));
+  writeFileSync(join(root, "docs", "private", "secret.md"), "ignored\n");
+  writeFileSync(join(root, "docs", "kept", "notes.md"), "kept\n");
+  writeFileSync(join(root, "draft.scratch.ts"), "ignored\n");
+  writeFileSync(join(root, "root-only.md"), "ignored\n");
+  writeFileSync(join(root, "important.tmp"), "config negation keeps this\n");
+  writeFileSync(join(root, "other.tmp"), "ignored by gitignore\n");
+
+  const result = scanDirectory(root, fakeEncoding, 50_000);
+
+  expect(result.files.map((file) => file.path)).toEqual([
+    "docs/kept/notes.md",
+    ".gitignore",
+    "cartodex.config.json",
+    "important.tmp",
+  ]);
+});
+
+test("reports invalid cartodex config files clearly", () => {
+  const invalidJsonRoot = fixture();
+  writeFileSync(join(invalidJsonRoot, "cartodex.config.json"), "{ invalid json");
+
+  expect(() => scanDirectory(invalidJsonRoot, fakeEncoding)).toThrow(/Failed to parse cartodex\.config\.json/);
+
+  const invalidIgnoreRoot = fixture();
+  writeFileSync(join(invalidIgnoreRoot, "cartodex.config.json"), JSON.stringify({ ignore: "notes.md" }));
+
+  expect(() => scanDirectory(invalidIgnoreRoot, fakeEncoding)).toThrow(/expected "ignore" to be an array of strings/);
+});
+
 test("skips binary, large, and token-heavy files", () => {
   const root = fixture();
   writeFileSync(join(root, "binary.bin"), Buffer.from([0, 1, 2, 3]));
