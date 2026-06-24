@@ -1,4 +1,4 @@
 interface:
   display_name: "Prepare Release"
   short_description: "Validate, commit, tag, and prepare releases"
-  default_prompt: "Use $prepare-release to bump to version 0.1.3, validate, commit, push, merge to main, tag, and prepare for publishing."
+  default_prompt: "Use $prepare-release to bump to version x.x.x, validate, commit, push, merge to main, tag, and prepare for publishing."
