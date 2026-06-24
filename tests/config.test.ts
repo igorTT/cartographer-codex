@@ -29,6 +29,18 @@ test("loads ignore patterns and a custom mapPath", () => {
   });
 });
 
+test("keeps the default mapPath when config omits it", () => {
+  const root = fixture();
+  writeFileSync(join(root, "cartodex.config.json"), JSON.stringify({
+    ignore: ["docs/private/"]
+  }));
+
+  expect(loadCartodexConfig(root)).toEqual({
+    ignore: ["docs/private/"],
+    mapPath: DEFAULT_MAP_PATH
+  });
+});
+
 test("reports invalid mapPath values clearly", () => {
   const invalidValues = [
     "/tmp/CARTODEX.md",

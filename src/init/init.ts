@@ -3,9 +3,9 @@ import { dirname, join } from "node:path";
 import {
   AGENTS_SECTION_END,
   AGENTS_SECTION_START,
-  INIT_TEMPLATES,
   MANAGED_FILE_MARKER,
   renderAgentsCartodexSection,
+  renderInitTemplates,
   type InitTemplate
 } from "./templates.js";
 import { findGitRoot } from "./repo.js";
@@ -40,9 +40,11 @@ export async function initCartodex(options: InitOptions): Promise<InitResult> {
     throw new Error(`Could not find a git repository root from ${options.cwd}`);
   }
 
+  const config = loadCartodexConfig(repoRoot);
+  const initTemplates = renderInitTemplates(config.mapPath);
   const desiredFiles = [
-    ...INIT_TEMPLATES.map((template) => analyzeTemplate(repoRoot, template)),
-    analyzeAgentsFile(repoRoot)
+    ...initTemplates.map((template) => analyzeTemplate(repoRoot, template)),
+    analyzeAgentsFile(repoRoot, config.mapPath)
   ];
   const analyzed = await Promise.all(desiredFiles);
   const hasBlockingConflict = analyzed.some((file) => file.status === "conflict");
@@ -109,11 +111,10 @@ async function analyzeTemplate(repoRoot: string, template: InitTemplate): Promis
   };
 }
 
-async function analyzeAgentsFile(repoRoot: string): Promise<AnalyzedFile> {
+async function analyzeAgentsFile(repoRoot: string, mapPath: string): Promise<AnalyzedFile> {
   const targetPath = "AGENTS.md";
   const absolutePath = join(repoRoot, targetPath);
   const existing = await readOptional(absolutePath);
-  const mapPath = loadCartodexConfig(repoRoot).mapPath;
   const next = upsertAgentsSection(existing ?? "", mapPath);
   let status: FileStatus;
 

@@ -7,7 +7,8 @@ import {
   AGENTS_CARTODEX_SECTION,
   CARTODEX_SKILL_TEMPLATE,
   INIT_TEMPLATES,
-  renderAgentsCartodexSection
+  renderAgentsCartodexSection,
+  renderCartodexSkillTemplate
 } from "../src/init/templates.js";
 import { findGitRoot } from "../src/init/repo.js";
 
@@ -72,6 +73,33 @@ describe("initCartodex", () => {
     expect(second.files.every((file) => file.operation === "unchanged")).toBe(true);
   });
 
+  it("renders the default mapPath into prompts when config is missing", async () => {
+    const repo = await makeRepo();
+
+    const result = await initCartodex({ cwd: repo });
+    expect(result.exitCode).toBe(0);
+
+    await expect(readFile(join(repo, "AGENTS.md"), "utf8")).resolves.toBe(`${AGENTS_CARTODEX_SECTION}\n`);
+    await expect(readFile(join(repo, ".agents/skills/cartodex/SKILL.md"), "utf8")).resolves.toBe(
+      CARTODEX_SKILL_TEMPLATE
+    );
+  });
+
+  it("keeps the default mapPath when config omits mapPath", async () => {
+    const repo = await makeRepo();
+    await writeFile(join(repo, "cartodex.config.json"), JSON.stringify({
+      ignore: ["private-notes.md"]
+    }));
+
+    const result = await initCartodex({ cwd: repo });
+    expect(result.exitCode).toBe(0);
+
+    await expect(readFile(join(repo, "AGENTS.md"), "utf8")).resolves.toBe(`${AGENTS_CARTODEX_SECTION}\n`);
+    await expect(readFile(join(repo, ".agents/skills/cartodex/SKILL.md"), "utf8")).resolves.toBe(
+      CARTODEX_SKILL_TEMPLATE
+    );
+  });
+
   it("preserves existing AGENTS.md content while adding the managed section", async () => {
     const repo = await makeRepo();
     await writeFile(join(repo, "AGENTS.md"), "# Project Agents\n\nKeep this text.\n");
@@ -97,6 +125,20 @@ describe("initCartodex", () => {
     await expect(readFile(join(repo, "AGENTS.md"), "utf8")).resolves.toBe(
       `${renderAgentsCartodexSection("architecture/CARTODEX.md")}\n`
     );
+    await expect(readFile(join(repo, ".agents/skills/cartodex/SKILL.md"), "utf8")).resolves.toBe(
+      renderCartodexSkillTemplate("architecture/CARTODEX.md")
+    );
+  });
+
+  it("renders concrete mapPath values throughout the installed skill prompt", async () => {
+    const rendered = renderCartodexSkillTemplate("architecture/CARTODEX.md");
+
+    expect(rendered).toContain("writing architecture/CARTODEX.md plus an AGENTS.md pointer");
+    expect(rendered).toContain("then synthesizing their reports into `architecture/CARTODEX.md`");
+    expect(rendered).toContain("Check whether `architecture/CARTODEX.md` already exists.");
+    expect(rendered).toContain("Write or update `architecture/CARTODEX.md`.");
+    expect(rendered).toContain("Before writing `architecture/CARTODEX.md`");
+    expect(rendered).not.toContain("{{mapPath}}");
   });
 
   it("reports AGENTS.md as stale when configured mapPath changes", async () => {
@@ -113,6 +155,7 @@ describe("initCartodex", () => {
 
     expect(result.exitCode).toBe(1);
     expect(result.files.find((file) => file.targetPath === "AGENTS.md")?.status).toBe("stale");
+    expect(result.files.find((file) => file.targetPath.endsWith("SKILL.md"))?.status).toBe("stale");
   });
 
   it("does not write during --check and exits 1 when assets are missing", async () => {

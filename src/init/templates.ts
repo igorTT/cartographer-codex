@@ -15,6 +15,10 @@ export interface InitTemplate {
   mode?: number;
 }
 
+interface TemplateConstants {
+  mapPath: string;
+}
+
 const templateRoot = join(dirname(fileURLToPath(import.meta.url)), "../../src/templates");
 
 function readTemplate(relativePath: string): string {
@@ -55,7 +59,7 @@ function withScriptManagedMarker(contents: string): string {
 }
 
 export const CARTODEX_SKILL_TEMPLATE = withSkillManagedMarker(
-  readTemplate("skill/SKILL.md"),
+  renderTemplateConstants(readTemplate("skill/SKILL.md"), { mapPath: DEFAULT_MAP_PATH }),
   `<!-- ${MANAGED_FILE_MARKER}: edit with care; rerun cartodex init --force to reset. -->`
 );
 
@@ -83,6 +87,17 @@ export function renderAgentsCartodexSection(mapPath: string): string {
   return AGENTS_CARTODEX_SECTION_TEMPLATE.replaceAll(MAP_PATH_PLACEHOLDER, mapPath);
 }
 
+export function renderCartodexSkillTemplate(mapPath: string): string {
+  return withSkillManagedMarker(
+    renderTemplateConstants(readTemplate("skill/SKILL.md"), { mapPath }),
+    `<!-- ${MANAGED_FILE_MARKER}: edit with care; rerun cartodex init --force to reset. -->`
+  );
+}
+
+function renderTemplateConstants(contents: string, constants: TemplateConstants): string {
+  return contents.replaceAll(MAP_PATH_PLACEHOLDER, constants.mapPath);
+}
+
 export const INIT_TEMPLATES: InitTemplate[] = [
   {
     targetPath: ".agents/skills/cartodex/SKILL.md",
@@ -106,3 +121,13 @@ export const INIT_TEMPLATES: InitTemplate[] = [
     contents: CARTODEX_SCOUT_AGENT_TEMPLATE
   }
 ];
+
+export function renderInitTemplates(mapPath = DEFAULT_MAP_PATH): InitTemplate[] {
+  return INIT_TEMPLATES.map((template) => {
+    if (template.targetPath === ".agents/skills/cartodex/SKILL.md") {
+      return { ...template, contents: renderCartodexSkillTemplate(mapPath) };
+    }
+
+    return template;
+  });
+}
