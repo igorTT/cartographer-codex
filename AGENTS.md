@@ -30,6 +30,12 @@ Recent commits use short, imperative summaries such as `Add npm package metadata
 
 Do not commit local secrets, npm tokens, or user-specific Codex configuration. Be careful when changing `src/templates/AGENTS.cartodex.md` or files under `.codex`/`.agents` templates, because `cartodex init` installs them into user repositories.
 
+## Generated Cartodex Assets
+
+Do not directly edit installed Cartodex skill files under `.agents/skills/cartodex/`. Change the source templates under `src/templates/` instead, then let `cartodex init` install or refresh the managed skill assets.
+
+Do not update `docs/CARTODEX_MAP.md` as part of ordinary code changes. Treat the map as generated documentation and refresh it only by running Cartodex as a separate mapping/update step.
+
 <!-- CARTODEX:START -->
 ## Cartodex Map
 

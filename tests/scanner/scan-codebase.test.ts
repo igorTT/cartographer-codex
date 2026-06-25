@@ -134,6 +134,26 @@ test("formats tree and compact-compatible token ordering data", () => {
   );
 });
 
+test("summarizes nested directory token totals", () => {
+  const root = fixture();
+  mkdirSync(join(root, "apps", "web", "src"), { recursive: true });
+  mkdirSync(join(root, "apps", "api"), { recursive: true });
+  mkdirSync(join(root, "empty"));
+  writeFileSync(join(root, "apps", "web", "src", "page.tsx"), "one two three four");
+  writeFileSync(join(root, "apps", "web", "README.md"), "one two");
+  writeFileSync(join(root, "apps", "api", "server.ts"), "one two three");
+
+  const result = scanDirectory(root, fakeEncoding);
+
+  expect(result.directory_summaries).toEqual([
+    { path: "apps", files: 3, tokens: 9 },
+    { path: "apps/api", files: 1, tokens: 3 },
+    { path: "apps/web", files: 2, tokens: 6 },
+    { path: "apps/web/src", files: 1, tokens: 4 },
+    { path: "empty", files: 0, tokens: 0 },
+  ]);
+});
+
 test("detects text files by known names, extensions, and utf-8 fallback", () => {
   const root = fixture();
   writeFileSync(join(root, "Dockerfile"), "FROM node:20\n");

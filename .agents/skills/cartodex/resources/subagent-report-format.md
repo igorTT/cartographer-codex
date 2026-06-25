@@ -3,6 +3,8 @@
 
 Analysis subagents should return markdown in this format. Keep reports factual, source-grounded, and scoped to the assigned files or directories.
 
+For token values, use the scanner output provided by the orchestrator. If a file has no numeric scanner token count, use a short reason such as `skipped: too_large`, `skipped: binary`, `skipped: too_many_tokens`, `ignored by scanner`, or `unresolved: not in scan output`.
+
 ```markdown
 # [Module or File Group]
 
@@ -18,7 +20,7 @@ Analysis subagents should return markdown in this format. Keep reports factual, 
 
 | File | Purpose | Tokens |
 | --- | --- | ---: |
-| [path] | [purpose] | [N or unknown] |
+| [path] | [purpose] | [N or reason] |
 
 ## Exports and Public APIs
 
