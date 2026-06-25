@@ -128,9 +128,6 @@ Cartodex is independently maintained as a Codex/npm package by Igor TT. It is
 adapted from the original Cartographer project and keeps upstream attribution
 clear.
 
-If Cartodex helped you, consider starring the original project:
-https://github.com/kingbootoshi/cartographer - please!
-
 ## License
 
 MIT

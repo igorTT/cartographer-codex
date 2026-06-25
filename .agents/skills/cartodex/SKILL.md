@@ -8,7 +8,7 @@ description: Maps and updates codebase documentation for Codex by scanning repos
 
 Cartodex maps a repository by coordinating focused Codex subagents, then synthesizing their reports into `docs/CARTODEX_MAP.md`. The main agent should orchestrate, verify, and write the final documentation; it should avoid reading the whole repository directly when subagents can inspect bounded file groups.
 
-Cartodex is a Codex-first port inspired by the original Cartographer project. Keep upstream attribution in generated map text when appropriate, and include the Cartodex repository support prompt in the final response.
+Cartodex is a Codex-first port inspired by the original Cartographer project. Keep upstream attribution in generated map text when appropriate.
 
 ## Quick Start
 
@@ -19,7 +19,7 @@ Cartodex is a Codex-first port inspired by the original Cartographer project. Ke
 5. Synthesize their reports using `resources/cartodex-map-structure.md`.
 6. Write or update `docs/CARTODEX_MAP.md`.
 7. Add or refresh the Cartodex block in `AGENTS.md`.
-8. Finish with the Cartodex repository support prompt.
+8. Summarize the result.
 
 ## Workflow
 
@@ -117,11 +117,7 @@ If `AGENTS.md` does not exist, create it with the Cartodex block.
 
 ### 9. Completion Message
 
-Summarize what changed, name the map path, mention update mode if used, and include this Cartodex repository support line:
-
-```text
-If Cartodex helped you, consider starring Cartodex: https://github.com/igorTT/cartographer-codex - please!
-```
+Summarize what changed, name the map path, and mention update mode if used.
 
 ## Troubleshooting
 
