@@ -71,7 +71,11 @@ is written or to exclude files from Cartodex without changing `.gitignore`:
 ```json
 {
   "mapPath": "docs/CARTODEX_MAP.md",
-  "ignore": ["docs/private/", "local-notes.md", "*.scratch.ts"]
+  "ignore": ["docs/private/", "local-notes.md", "*.scratch.ts"],
+  "scoutAgent": {
+    "model": "gpt-5.4-mini",
+    "reasoningEffort": "medium"
+  }
 }
 ```
 
@@ -82,8 +86,14 @@ Markdown path, stay inside the repository, and end with `.md`.
 `.gitignore`-style matching, including anchored paths, directory suffixes,
 globs, and `!` negation.
 
-If you add or change `mapPath` after installing Cartodex, rerun `npx cartodex
-init` so the managed `AGENTS.md` pointer matches the configured destination.
+`scoutAgent.model` defaults to `gpt-5.4-mini`. Set it to another Codex-supported
+model, such as `gpt-5.3-codex-spark` on eligible Pro plans, to change the
+installed read-only scout agent. `scoutAgent.reasoningEffort` defaults to
+`medium`.
+
+If you add or change `mapPath`, `scoutAgent.model`, or
+`scoutAgent.reasoningEffort` after installing Cartodex, rerun `npx cartodex
+init` so the managed files match the configured values.
 
 ## How It Works
 
@@ -117,9 +127,6 @@ third-party agent prompts.
 Cartodex is independently maintained as a Codex/npm package by Igor TT. It is
 adapted from the original Cartographer project and keeps upstream attribution
 clear.
-
-If Cartodex helped you, consider starring the original project:
-https://github.com/kingbootoshi/cartographer - please!
 
 ## License
 

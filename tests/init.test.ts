@@ -5,9 +5,11 @@ import { describe, expect, it } from "vitest";
 import { initCartodex, upsertAgentsSection } from "../src/init/init.js";
 import {
   AGENTS_CARTODEX_SECTION,
+  CARTODEX_SCOUT_AGENT_TEMPLATE,
   CARTODEX_SKILL_TEMPLATE,
   INIT_TEMPLATES,
   renderAgentsCartodexSection,
+  renderCartodexScoutAgentTemplate,
   renderCartodexSkillTemplate
 } from "../src/init/templates.js";
 import { findGitRoot } from "../src/init/repo.js";
@@ -130,6 +132,40 @@ describe("initCartodex", () => {
     );
   });
 
+  it("renders the default scout agent model when config is missing", async () => {
+    const repo = await makeRepo();
+
+    const result = await initCartodex({ cwd: repo });
+    expect(result.exitCode).toBe(0);
+
+    await expect(readFile(join(repo, ".codex/agents/cartodex-scout.toml"), "utf8")).resolves.toBe(
+      CARTODEX_SCOUT_AGENT_TEMPLATE
+    );
+    await expect(readFile(join(repo, ".codex/agents/cartodex-scout.toml"), "utf8")).resolves.toContain(
+      'model = "gpt-5.4-mini"'
+    );
+    await expect(readFile(join(repo, ".codex/agents/cartodex-scout.toml"), "utf8")).resolves.toContain(
+      'model_reasoning_effort = "medium"'
+    );
+  });
+
+  it("renders configured scout agent settings into the installed agent", async () => {
+    const repo = await makeRepo();
+    await writeFile(join(repo, "cartodex.config.json"), JSON.stringify({
+      scoutAgent: {
+        model: "gpt-5.3-codex-spark",
+        reasoningEffort: "low"
+      }
+    }));
+
+    const result = await initCartodex({ cwd: repo });
+    expect(result.exitCode).toBe(0);
+
+    await expect(readFile(join(repo, ".codex/agents/cartodex-scout.toml"), "utf8")).resolves.toBe(
+      renderCartodexScoutAgentTemplate("gpt-5.3-codex-spark", "low")
+    );
+  });
+
   it("renders concrete mapPath values throughout the installed skill prompt", async () => {
     const rendered = renderCartodexSkillTemplate("architecture/CARTODEX.md");
 
@@ -156,6 +192,46 @@ describe("initCartodex", () => {
     expect(result.exitCode).toBe(1);
     expect(result.files.find((file) => file.targetPath === "AGENTS.md")?.status).toBe("stale");
     expect(result.files.find((file) => file.targetPath.endsWith("SKILL.md"))?.status).toBe("stale");
+  });
+
+  it("reports scout agent as stale when configured scout model changes", async () => {
+    const repo = await makeRepo();
+    await writeFile(join(repo, "cartodex.config.json"), JSON.stringify({
+      scoutAgent: {
+        model: "gpt-5.4-mini"
+      }
+    }));
+    await initCartodex({ cwd: repo });
+    await writeFile(join(repo, "cartodex.config.json"), JSON.stringify({
+      scoutAgent: {
+        model: "gpt-5.3-codex-spark"
+      }
+    }));
+
+    const result = await initCartodex({ cwd: repo, check: true });
+
+    expect(result.exitCode).toBe(1);
+    expect(result.files.find((file) => file.targetPath.endsWith("cartodex-scout.toml"))?.status).toBe("stale");
+  });
+
+  it("reports scout agent as stale when configured scout reasoning effort changes", async () => {
+    const repo = await makeRepo();
+    await writeFile(join(repo, "cartodex.config.json"), JSON.stringify({
+      scoutAgent: {
+        reasoningEffort: "medium"
+      }
+    }));
+    await initCartodex({ cwd: repo });
+    await writeFile(join(repo, "cartodex.config.json"), JSON.stringify({
+      scoutAgent: {
+        reasoningEffort: "high"
+      }
+    }));
+
+    const result = await initCartodex({ cwd: repo, check: true });
+
+    expect(result.exitCode).toBe(1);
+    expect(result.files.find((file) => file.targetPath.endsWith("cartodex-scout.toml"))?.status).toBe("stale");
   });
 
   it("does not write during --check and exits 1 when assets are missing", async () => {

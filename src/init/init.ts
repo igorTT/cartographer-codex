@@ -41,7 +41,11 @@ export async function initCartodex(options: InitOptions): Promise<InitResult> {
   }
 
   const config = loadCartodexConfig(repoRoot);
-  const initTemplates = renderInitTemplates(config.mapPath);
+  const initTemplates = renderInitTemplates({
+    mapPath: config.mapPath,
+    scoutAgentModel: config.scoutAgent.model,
+    scoutAgentReasoningEffort: config.scoutAgent.reasoningEffort
+  });
   const desiredFiles = [
     ...initTemplates.map((template) => analyzeTemplate(repoRoot, template)),
     analyzeAgentsFile(repoRoot, config.mapPath)

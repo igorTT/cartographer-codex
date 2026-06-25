@@ -1,10 +1,12 @@
 import { readFileSync } from "node:fs";
 import { dirname, join } from "node:path";
 import { fileURLToPath } from "node:url";
-import { DEFAULT_MAP_PATH } from "../config.js";
+import { DEFAULT_MAP_PATH, DEFAULT_SCOUT_AGENT_MODEL, DEFAULT_SCOUT_AGENT_REASONING_EFFORT } from "../config.js";
 
 export const MANAGED_FILE_MARKER = "cartodex-managed";
 export const MAP_PATH_PLACEHOLDER = "{{mapPath}}";
+export const SCOUT_AGENT_MODEL_PLACEHOLDER = "{{scoutAgentModel}}";
+export const SCOUT_AGENT_REASONING_EFFORT_PLACEHOLDER = "{{scoutAgentReasoningEffort}}";
 
 export const AGENTS_SECTION_START = "<!-- CARTODEX:START -->";
 export const AGENTS_SECTION_END = "<!-- CARTODEX:END -->";
@@ -17,6 +19,8 @@ export interface InitTemplate {
 
 interface TemplateConstants {
   mapPath: string;
+  scoutAgentModel: string;
+  scoutAgentReasoningEffort: string;
 }
 
 const templateRoot = join(dirname(fileURLToPath(import.meta.url)), "../../src/templates");
@@ -59,7 +63,11 @@ function withScriptManagedMarker(contents: string): string {
 }
 
 export const CARTODEX_SKILL_TEMPLATE = withSkillManagedMarker(
-  renderTemplateConstants(readTemplate("skill/SKILL.md"), { mapPath: DEFAULT_MAP_PATH }),
+  renderTemplateConstants(readTemplate("skill/SKILL.md"), {
+    mapPath: DEFAULT_MAP_PATH,
+    scoutAgentModel: DEFAULT_SCOUT_AGENT_MODEL,
+    scoutAgentReasoningEffort: DEFAULT_SCOUT_AGENT_REASONING_EFFORT
+  }),
   `<!-- ${MANAGED_FILE_MARKER}: edit with care; rerun cartodex init --force to reset. -->`
 );
 
@@ -76,7 +84,11 @@ export const SUBAGENT_REPORT_FORMAT_TEMPLATE = withManagedMarker(
 export const SCAN_CODEBASE_TEMPLATE = withScriptManagedMarker(readTemplate("skill/scripts/scan-codebase.mjs"));
 
 export const CARTODEX_SCOUT_AGENT_TEMPLATE = withManagedMarker(
-  readTemplate("codex/cartodex-scout.toml"),
+  renderTemplateConstants(readTemplate("codex/cartodex-scout.toml"), {
+    mapPath: DEFAULT_MAP_PATH,
+    scoutAgentModel: DEFAULT_SCOUT_AGENT_MODEL,
+    scoutAgentReasoningEffort: DEFAULT_SCOUT_AGENT_REASONING_EFFORT
+  }),
   `# ${MANAGED_FILE_MARKER}: edit with care; rerun cartodex init --force to reset.`
 );
 
@@ -89,13 +101,34 @@ export function renderAgentsCartodexSection(mapPath: string): string {
 
 export function renderCartodexSkillTemplate(mapPath: string): string {
   return withSkillManagedMarker(
-    renderTemplateConstants(readTemplate("skill/SKILL.md"), { mapPath }),
+    renderTemplateConstants(readTemplate("skill/SKILL.md"), {
+      mapPath,
+      scoutAgentModel: DEFAULT_SCOUT_AGENT_MODEL,
+      scoutAgentReasoningEffort: DEFAULT_SCOUT_AGENT_REASONING_EFFORT
+    }),
     `<!-- ${MANAGED_FILE_MARKER}: edit with care; rerun cartodex init --force to reset. -->`
   );
 }
 
+export function renderCartodexScoutAgentTemplate(
+  scoutAgentModel: string,
+  scoutAgentReasoningEffort = DEFAULT_SCOUT_AGENT_REASONING_EFFORT
+): string {
+  return withManagedMarker(
+    renderTemplateConstants(readTemplate("codex/cartodex-scout.toml"), {
+      mapPath: DEFAULT_MAP_PATH,
+      scoutAgentModel,
+      scoutAgentReasoningEffort
+    }),
+    `# ${MANAGED_FILE_MARKER}: edit with care; rerun cartodex init --force to reset.`
+  );
+}
+
 function renderTemplateConstants(contents: string, constants: TemplateConstants): string {
-  return contents.replaceAll(MAP_PATH_PLACEHOLDER, constants.mapPath);
+  return contents
+    .replaceAll(MAP_PATH_PLACEHOLDER, constants.mapPath)
+    .replaceAll(SCOUT_AGENT_MODEL_PLACEHOLDER, constants.scoutAgentModel)
+    .replaceAll(SCOUT_AGENT_REASONING_EFFORT_PLACEHOLDER, constants.scoutAgentReasoningEffort);
 }
 
 export const INIT_TEMPLATES: InitTemplate[] = [
@@ -122,10 +155,25 @@ export const INIT_TEMPLATES: InitTemplate[] = [
   }
 ];
 
-export function renderInitTemplates(mapPath = DEFAULT_MAP_PATH): InitTemplate[] {
+export function renderInitTemplates(options: {
+  mapPath?: string;
+  scoutAgentModel?: string;
+  scoutAgentReasoningEffort?: string;
+} = {}): InitTemplate[] {
+  const mapPath = options.mapPath ?? DEFAULT_MAP_PATH;
+  const scoutAgentModel = options.scoutAgentModel ?? DEFAULT_SCOUT_AGENT_MODEL;
+  const scoutAgentReasoningEffort = options.scoutAgentReasoningEffort ?? DEFAULT_SCOUT_AGENT_REASONING_EFFORT;
+
   return INIT_TEMPLATES.map((template) => {
     if (template.targetPath === ".agents/skills/cartodex/SKILL.md") {
       return { ...template, contents: renderCartodexSkillTemplate(mapPath) };
+    }
+
+    if (template.targetPath === ".codex/agents/cartodex-scout.toml") {
+      return {
+        ...template,
+        contents: renderCartodexScoutAgentTemplate(scoutAgentModel, scoutAgentReasoningEffort)
+      };
     }
 
     return template;
