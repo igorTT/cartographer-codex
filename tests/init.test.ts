@@ -5,9 +5,11 @@ import { describe, expect, it } from "vitest";
 import { initCartodex, upsertAgentsSection } from "../src/init/init.js";
 import {
   AGENTS_CARTODEX_SECTION,
+  CARTODEX_MAP_STRUCTURE_TEMPLATE,
   CARTODEX_SCOUT_AGENT_TEMPLATE,
   CARTODEX_SKILL_TEMPLATE,
   INIT_TEMPLATES,
+  SUBAGENT_REPORT_FORMAT_TEMPLATE,
   renderAgentsCartodexSection,
   renderCartodexScoutAgentTemplate,
   renderCartodexSkillTemplate
@@ -175,6 +177,16 @@ describe("initCartodex", () => {
     expect(rendered).toContain("Write or update `architecture/CARTODEX.md`.");
     expect(rendered).toContain("Before writing `architecture/CARTODEX.md`");
     expect(rendered).not.toContain("{{mapPath}}");
+  });
+
+  it("requires token table cells to use scanner counts or explicit reasons", () => {
+    expect(SUBAGENT_REPORT_FORMAT_TEMPLATE).toContain("use the scanner output provided by the orchestrator");
+    expect(SUBAGENT_REPORT_FORMAT_TEMPLATE).toContain("[N or reason]");
+    expect(SUBAGENT_REPORT_FORMAT_TEMPLATE).not.toContain("N or unknown");
+
+    expect(CARTODEX_MAP_STRUCTURE_TEMPLATE).toContain("directory_summaries[].tokens");
+    expect(CARTODEX_SKILL_TEMPLATE).toContain("Resolve Token Columns");
+    expect(CARTODEX_SKILL_TEMPLATE).toContain("unresolved: [reason]");
   });
 
   it("reports AGENTS.md as stale when configured mapPath changes", async () => {

@@ -156,6 +156,12 @@ export interface ScannedFile {
   size_bytes: number;
 }
 
+export interface DirectorySummary {
+  path: string;
+  files: number;
+  tokens: number;
+}
+
 export type SkippedFile =
   | { path: string; reason: "permission_denied" }
   | { path: string; reason: "too_large"; size_bytes: number }
@@ -167,6 +173,7 @@ export interface ScanResult {
   root: string;
   files: ScannedFile[];
   directories: string[];
+  directory_summaries: DirectorySummary[];
   total_tokens: number;
   total_files: number;
   skipped: SkippedFile[];
@@ -199,6 +206,33 @@ export function isTextFile(path: string): boolean {
 
 function relativePath(root: string, path: string): string {
   return relative(root, path).split(sep).join("/");
+}
+
+function summarizeDirectories(directories: string[], files: ScannedFile[]): DirectorySummary[] {
+  const summaries = new Map<string, { files: number; tokens: number }>();
+
+  for (const directory of directories) {
+    summaries.set(directory, { files: 0, tokens: 0 });
+  }
+
+  for (const file of files) {
+    const parts = file.path.split("/");
+    let directory = "";
+    for (let index = 1; index < parts.length; index += 1) {
+      directory = directory ? `${directory}/${parts[index - 1]}` : parts[index - 1] ?? "";
+      const summary = summaries.get(directory);
+      if (summary) {
+        summary.files += 1;
+        summary.tokens += file.tokens;
+      }
+    }
+  }
+
+  return directories.map((directory) => ({
+    path: directory,
+    files: summaries.get(directory)?.files ?? 0,
+    tokens: summaries.get(directory)?.tokens ?? 0,
+  }));
 }
 
 export function scanDirectory(
@@ -301,6 +335,7 @@ export function scanDirectory(
     root,
     files,
     directories,
+    directory_summaries: summarizeDirectories(directories, files),
     total_tokens: totalTokens,
     total_files: files.length,
     skipped,

@@ -42,7 +42,7 @@ Run the local scanner from the repository root:
 node .agents/skills/cartodex/scripts/scan-codebase.mjs . --format json
 ```
 
-The scanner output should provide the file tree, per-file token estimates, total files, total tokens, and skipped files. If the scanner is missing or fails, explain the blocker and use conservative repository inspection with `rg --files`, `find`, and targeted reads.
+The scanner output should provide the file tree, per-file token estimates, directory token summaries, total files, total tokens, and skipped files. If the scanner is missing or fails, explain the blocker and use conservative repository inspection with `rg --files`, `find`, and targeted reads.
 
 The scanner automatically respects root `.gitignore` and optional root `cartodex.config.json` ignore patterns. Users can add a config file like `{"mapPath":"docs/CARTODEX_MAP.md","ignore":["docs/private/","local-notes.md"],"scoutAgent":{"model":"gpt-5.4-mini","reasoningEffort":"medium"}}` to set the map path, configure the scout agent, and exclude files from Cartodex without adding them to `.gitignore`.
 
@@ -96,7 +96,19 @@ Merge subagent reports into one coherent map:
 - Include Mermaid diagrams only when they clarify real architecture or data flow.
 - Avoid inventing certainty; mark uncertain conclusions as inferred.
 
-### 7. Write The Map
+### 7. Resolve Token Columns
+
+Before writing the final map, reconcile every `Tokens` table cell against the scanner JSON from step 2:
+
+1. Exact file rows must use the matching `files[].tokens` value.
+2. Directory rows must use the matching `directory_summaries[].tokens` value.
+3. For grouped rows, prefer exact file rows or explicit directory rows that already exist in `directory_summaries[]`; avoid inventing ad hoc wildcard aggregation.
+4. Rows matching `skipped[]` entries must use `skipped: [reason]` instead of a number.
+5. Rows that cannot be matched to `files[]`, `directory_summaries[]`, or `skipped[]` must use `unresolved: [reason]`.
+
+If any `unresolved:` rows remain, mention them in the completion message with the row text and reason.
+
+### 8. Write The Map
 
 Before writing `{{mapPath}}`, get the real UTC timestamp:
 
@@ -108,13 +120,13 @@ Use the exact command output for `last_mapped` and the visible "Last mapped" tex
 
 Read `resources/cartodex-map-structure.md` before writing. Follow that structure unless the repository clearly needs an additional section.
 
-### 8. Update AGENTS.md
+### 9. Update AGENTS.md
 
 Add or refresh a concise Cartodex-managed block in `AGENTS.md` that points future agents to `{{mapPath}}`. Preserve unrelated user content. Replace only the content between `<!-- CARTODEX:START -->` and `<!-- CARTODEX:END -->`; append that marker block if it is missing.
 
 If `AGENTS.md` does not exist, create it with the Cartodex block.
 
-### 9. Completion Message
+### 10. Completion Message
 
 Summarize what changed, name the map path, and mention update mode if used.
 

@@ -106,10 +106,11 @@ node .agents/skills/cartodex/scripts/scan-codebase.mjs . --format json
 The scanner respects common generated/dependency ignores, the repository root
 `.gitignore`, and optional root `cartodex.config.json` ignore patterns. It also
 omits Cartodex's installed scanner script and the config file itself from scan
-output. It skips binary and very large files, and estimates tokens with
-`js-tiktoken`. The skill uses scanner output to plan parallel subagent
-assignments, then writes or updates the configured map path using the installed
-map structure resource.
+output. It includes directory token summaries so agents do not have to
+recompute nested totals. It skips binary and very large files, and estimates
+tokens with `js-tiktoken`. The skill uses scanner output to plan parallel
+subagent assignments, then writes or updates the configured map path using the
+installed map structure resource.
 
 If the configured map path already exists, Cartodex uses its `last_mapped`
 frontmatter plus git history when available to focus update work on changed

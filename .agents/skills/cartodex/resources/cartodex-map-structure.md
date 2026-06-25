@@ -34,6 +34,8 @@ total_tokens: N
 | --- | --- | ---: |
 | [path] | [purpose] | [N] |
 
+Token cells must be resolved from the scanner JSON before writing the final map. Use `files[].tokens` for scanned files, `directory_summaries[].tokens` for directory rows, `skipped: [reason]` for scanner-skipped files, or `unresolved: [reason]` when a row cannot be matched to scanner output.
+
 **Exports**: [key APIs, commands, screens, services, or data contracts]
 **Dependencies**: [what this module needs]
 **Dependents**: [what calls or imports this module]
