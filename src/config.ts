@@ -3,10 +3,16 @@ import { isAbsolute, join, posix } from "node:path";
 
 export const CARTODEX_CONFIG_FILE = "cartodex.config.json";
 export const DEFAULT_MAP_PATH = "docs/CARTODEX_MAP.md";
+export const DEFAULT_SCOUT_AGENT_MODEL = "gpt-5.4-mini";
+export const DEFAULT_SCOUT_AGENT_REASONING_EFFORT = "medium";
 
 export interface CartodexConfig {
   ignore: string[];
   mapPath: string;
+  scoutAgent: {
+    model: string;
+    reasoningEffort: string;
+  };
 }
 
 export function loadCartodexConfig(root: string): CartodexConfig {
@@ -33,7 +39,7 @@ export function loadCartodexConfig(root: string): CartodexConfig {
     throw new Error(`${CARTODEX_CONFIG_FILE}: expected a JSON object`);
   }
 
-  const maybeConfig = parsed as { ignore?: unknown; mapPath?: unknown };
+  const maybeConfig = parsed as { ignore?: unknown; mapPath?: unknown; scoutAgent?: unknown };
   const config = defaultConfig();
 
   if (maybeConfig.ignore !== undefined) {
@@ -50,13 +56,37 @@ export function loadCartodexConfig(root: string): CartodexConfig {
     config.mapPath = validateMapPath(maybeConfig.mapPath);
   }
 
+  if (maybeConfig.scoutAgent !== undefined) {
+    if (!maybeConfig.scoutAgent || typeof maybeConfig.scoutAgent !== "object" || Array.isArray(maybeConfig.scoutAgent)) {
+      throw new Error(`${CARTODEX_CONFIG_FILE}: expected "scoutAgent" to be an object`);
+    }
+
+    const scoutAgent = maybeConfig.scoutAgent as { model?: unknown; reasoningEffort?: unknown };
+    if (scoutAgent.model !== undefined) {
+      if (typeof scoutAgent.model !== "string" || !scoutAgent.model.trim()) {
+        throw new Error(`${CARTODEX_CONFIG_FILE}: expected "scoutAgent.model" to be a non-empty string`);
+      }
+      config.scoutAgent.model = scoutAgent.model;
+    }
+    if (scoutAgent.reasoningEffort !== undefined) {
+      if (typeof scoutAgent.reasoningEffort !== "string" || !scoutAgent.reasoningEffort.trim()) {
+        throw new Error(`${CARTODEX_CONFIG_FILE}: expected "scoutAgent.reasoningEffort" to be a non-empty string`);
+      }
+      config.scoutAgent.reasoningEffort = scoutAgent.reasoningEffort;
+    }
+  }
+
   return config;
 }
 
 function defaultConfig(): CartodexConfig {
   return {
     ignore: [],
-    mapPath: DEFAULT_MAP_PATH
+    mapPath: DEFAULT_MAP_PATH,
+    scoutAgent: {
+      model: DEFAULT_SCOUT_AGENT_MODEL,
+      reasoningEffort: DEFAULT_SCOUT_AGENT_REASONING_EFFORT
+    }
   };
 }
 

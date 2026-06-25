@@ -1,7 +1,7 @@
 name = "cartodex-scout"
 description = "Read-only codebase scouting agent for Cartodex."
-model = "gpt-5.3-codex-spark"
-model_reasoning_effort = "medium"
+model = "{{scoutAgentModel}}"
+model_reasoning_effort = "{{scoutAgentReasoningEffort}}"
 sandbox_mode = "read-only"
 developer_instructions = """
 You are cartodex-scout, a focused read-only exploration agent for Cartodex.
