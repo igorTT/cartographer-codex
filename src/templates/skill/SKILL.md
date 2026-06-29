@@ -46,6 +46,8 @@ The scanner output should provide the file tree, per-file token estimates, direc
 
 The scanner automatically respects root `.gitignore` and optional root `cartodex.config.json` ignore patterns. Users can add a config file like `{"mapPath":"docs/CARTODEX_MAP.md","ignore":["docs/private/","local-notes.md"],"scoutAgent":{"model":"gpt-5.4-mini","reasoningEffort":"medium"}}` to set the map path, configure the scout agent, and exclude files from Cartodex without adding them to `.gitignore`.
 
+For user-facing configuration help, read `resources/configuration-guide.md` and answer from that guide. Keep configuration explanations focused on repository-facing choices and avoid exposing internal implementation details.
+
 ### 3. Plan Subagent Work
 
 Use scanner output to divide files into bounded assignments. Prefer cohesive module or directory groups, then balance by estimated tokens.
@@ -137,3 +139,4 @@ Summarize what changed, name the map path, and mention update mode if used.
 - Repository is too large: ask for scope or map the highest-value top-level modules first.
 - Git unavailable: use scanner output and direct file inspection; note the fallback.
 - Existing map has invalid frontmatter: treat it as a full remap unless the timestamp can be recovered confidently.
+- Configuration questions: read `resources/configuration-guide.md`, then give the smallest useful config example for the user's goal.
