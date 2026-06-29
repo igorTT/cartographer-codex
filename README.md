@@ -50,7 +50,7 @@ Markdown guide Codex can read before changing the repository:
 
 ```markdown
 ---
-cartodex_version: 0.3.0
+cartodex_version: 0.3.1
 last_mapped: 2026-06-25T19:25:02Z
 map_path: docs/CARTODEX_MAP.md
 ---
