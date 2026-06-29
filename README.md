@@ -24,6 +24,7 @@ The command installs:
   SKILL.md
   resources/
     cartodex-map-structure.md
+    configuration-guide.md
     subagent-report-format.md
   scripts/
     scan-codebase.mjs
@@ -94,6 +95,10 @@ installed read-only scout agent. `scoutAgent.reasoningEffort` defaults to
 If you add or change `mapPath`, `scoutAgent.model`, or
 `scoutAgent.reasoningEffort` after installing Cartodex, rerun `npx cartodex
 init` so the managed files match the configured values.
+
+The installed skill also includes `resources/configuration-guide.md`, a
+user-facing draft guide for configuration philosophy, common recipes, and
+choosing the smallest useful setting for a repository.
 
 ## How It Works
 

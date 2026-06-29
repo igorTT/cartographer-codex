@@ -81,6 +81,11 @@ export const SUBAGENT_REPORT_FORMAT_TEMPLATE = withManagedMarker(
   `<!-- ${MANAGED_FILE_MARKER}: edit with care; rerun cartodex init --force to reset. -->`
 );
 
+export const CONFIGURATION_GUIDE_TEMPLATE = withManagedMarker(
+  readTemplate("skill/resources/configuration-guide.md"),
+  `<!-- ${MANAGED_FILE_MARKER}: edit with care; rerun cartodex init --force to reset. -->`
+);
+
 export const SCAN_CODEBASE_TEMPLATE = withScriptManagedMarker(readTemplate("skill/scripts/scan-codebase.mjs"));
 
 export const CARTODEX_SCOUT_AGENT_TEMPLATE = withManagedMarker(
@@ -143,6 +148,10 @@ export const INIT_TEMPLATES: InitTemplate[] = [
   {
     targetPath: ".agents/skills/cartodex/resources/subagent-report-format.md",
     contents: SUBAGENT_REPORT_FORMAT_TEMPLATE
+  },
+  {
+    targetPath: ".agents/skills/cartodex/resources/configuration-guide.md",
+    contents: CONFIGURATION_GUIDE_TEMPLATE
   },
   {
     targetPath: ".agents/skills/cartodex/scripts/scan-codebase.mjs",

@@ -8,6 +8,7 @@ import {
   CARTODEX_MAP_STRUCTURE_TEMPLATE,
   CARTODEX_SCOUT_AGENT_TEMPLATE,
   CARTODEX_SKILL_TEMPLATE,
+  CONFIGURATION_GUIDE_TEMPLATE,
   INIT_TEMPLATES,
   SUBAGENT_REPORT_FORMAT_TEMPLATE,
   renderAgentsCartodexSection,
@@ -187,6 +188,13 @@ describe("initCartodex", () => {
     expect(CARTODEX_MAP_STRUCTURE_TEMPLATE).toContain("directory_summaries[].tokens");
     expect(CARTODEX_SKILL_TEMPLATE).toContain("Resolve Token Columns");
     expect(CARTODEX_SKILL_TEMPLATE).toContain("unresolved: [reason]");
+  });
+
+  it("installs a user-facing configuration guide", () => {
+    expect(CONFIGURATION_GUIDE_TEMPLATE).toContain("Cartodex Configuration Guide");
+    expect(CONFIGURATION_GUIDE_TEMPLATE).toContain("repository-facing choices");
+    expect(CONFIGURATION_GUIDE_TEMPLATE).toContain("npx cartodex init --force");
+    expect(CARTODEX_SKILL_TEMPLATE).toContain("resources/configuration-guide.md");
   });
 
   it("reports AGENTS.md as stale when configured mapPath changes", async () => {
