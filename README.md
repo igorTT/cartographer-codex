@@ -1,11 +1,12 @@
 # Cartodex
 
+[![npm](https://img.shields.io/npm/v/cartodex)](https://www.npmjs.com/package/cartodex)
+[![license](https://img.shields.io/npm/l/cartodex)](LICENSE)
+
 Cartodex is a standalone Codex-first package for mapping codebases. It
-initializes repository-local Codex assets that help map a codebase with a
-skill-driven workflow: scan the repository, delegate focused analysis to
-subagents, synthesize their reports, and write a navigable Markdown map. By
-default the map is written to `docs/CARTODEX_MAP.md`, and projects can choose a
-different path with `cartodex.config.json`.
+installs a repo-local Codex skill that scans your project, asks focused
+subagents to inspect the important areas, and writes a navigable architecture
+map for future Codex threads.
 
 Cartodex is distributed as an npm package, not as a Codex plugin.
 
@@ -34,34 +35,47 @@ The command installs:
 AGENTS.md
 ```
 
-Then open a fresh Codex thread so the repo-local skill and project agent are
-loaded, and ask:
+Then open a fresh Codex thread so the repo-local skill and read-only scout
+agent are loaded, and ask:
 
 ```text
 Use Cartodex to map this codebase.
 ```
 
-## Init Behavior
+## Quick Example
 
-`init` is safe to rerun:
+Cartodex writes the map to `docs/CARTODEX_MAP.md` by default. The result is a
+Markdown guide Codex can read before changing the repository:
 
-- Missing Cartodex-managed files are restored.
-- Current files are left unchanged.
-- Changed managed files are not overwritten unless `--force` is provided.
-- Existing unrelated `AGENTS.md` content is preserved.
+```markdown
+---
+cartodex_version: 0.3.0
+last_mapped: 2026-06-25T19:25:02Z
+map_path: docs/CARTODEX_MAP.md
+---
 
-Useful commands:
+# Cartodex Map
 
-```bash
-npx cartodex init
-npx cartodex init --check
-npx cartodex init --force
+## Repository Overview
+
+Cartodex is a TypeScript CLI that installs repository-local Codex assets for
+codebase mapping. The scanner summarizes files, ignore rules, and token counts;
+the Cartodex skill turns that scan into focused subagent assignments and a
+durable Markdown map.
+
+## Common Change Paths
+
+| Change | Start Here |
+| --- | --- |
+| Add or adjust CLI behavior | `src/cli.ts`, `src/commands/` |
+| Change installed skill assets | `src/templates/skill/` |
 ```
 
-`--check` performs a dry run and exits with `0` only when installed Cartodex
-assets are current. Because `init` renders the configured map path into
-`AGENTS.md`, changing `cartodex.config.json` may make `AGENTS.md` stale; rerun
-`npx cartodex init --force` to refresh managed Cartodex files.
+Once the map exists, ask things like:
+
+```text
+Read the Cartodex map, then add support for a new scanner ignore pattern.
+```
 
 ## Configuration
 
@@ -95,6 +109,28 @@ If you add or change `mapPath`, `scoutAgent.model`, or
 `scoutAgent.reasoningEffort` after installing Cartodex, rerun `npx cartodex
 init` so the managed files match the configured values.
 
+## Init Behavior
+
+`init` is safe to rerun:
+
+- Missing Cartodex-managed files are restored.
+- Current files are left unchanged.
+- Changed managed files are not overwritten unless `--force` is provided.
+- Existing unrelated `AGENTS.md` content is preserved.
+
+Useful commands:
+
+```bash
+npx cartodex init
+npx cartodex init --check
+npx cartodex init --force
+```
+
+`--check` performs a dry run and exits with `0` only when installed Cartodex
+assets are current. Because `init` renders the configured map path into
+`AGENTS.md`, changing `cartodex.config.json` may make `AGENTS.md` stale; rerun
+`npx cartodex init --force` to refresh managed Cartodex files.
+
 ## How It Works
 
 The installed skill runs:
@@ -119,15 +155,14 @@ areas.
 ## Scout Agent
 
 `init` installs `.codex/agents/cartodex-scout.toml`, a read-only project agent
-for narrow codebase exploration tasks. The scout prompt is an original
-Codex-specific prompt written for Cartodex; it does not vendor text from
-third-party agent prompts.
+for narrow codebase exploration tasks.
 
 ## Attribution
 
 Cartodex is independently maintained as a Codex/npm package by Igor TT. It is
-adapted from the original Cartographer project and keeps upstream attribution
-clear.
+adapted from the original
+[Cartographer](https://github.com/kingbootoshi/cartographer) project by
+Bootoshi and keeps upstream attribution in [NOTICE.md](NOTICE.md).
 
 ## License
 
