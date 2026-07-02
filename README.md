@@ -7,6 +7,9 @@ subagents, synthesize their reports, and write a navigable Markdown map. By
 default the map is written to `docs/CARTODEX_MAP.md`, and projects can choose a
 different path with `cartodex.config.json`.
 
+Cartodex's approach to maps, when they should change, and why is described in
+[docs/PROJECT_PHILOSOPHY.md](docs/PROJECT_PHILOSOPHY.md).
+
 Cartodex is distributed as an npm package, not as a Codex plugin.
 
 ## Install
