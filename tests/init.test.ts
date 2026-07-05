@@ -191,6 +191,17 @@ describe("initCartodex", () => {
     expect(CARTODEX_SKILL_TEMPLATE).toContain("unresolved: [reason]");
   });
 
+  it("requires generated map section path markers", () => {
+    expect(CARTODEX_MAP_STRUCTURE_TEMPLATE).toContain("<!-- cartodex:paths");
+    expect(CARTODEX_MAP_STRUCTURE_TEMPLATE).toContain("Every structural section heading must be followed");
+    expect(CARTODEX_MAP_STRUCTURE_TEMPLATE).toContain("A path ending in `/` covers a directory subtree");
+    expect(CARTODEX_MAP_STRUCTURE_TEMPLATE).toContain("Do not use gitignore-style globs");
+
+    expect(CARTODEX_SKILL_TEMPLATE).toContain("Emit one `<!-- cartodex:paths ... -->` marker");
+    expect(CARTODEX_SKILL_TEMPLATE).toContain("Preserve each unchanged section's existing `<!-- cartodex:paths ... -->` marker");
+    expect(CARTODEX_SKILL_TEMPLATE).toContain("Revise a section's `cartodex:paths` marker only when");
+  });
+
   it("installs a user-facing configuration guide", () => {
     expect(CONFIGURATION_GUIDE_TEMPLATE).toContain("Cartodex Configuration Guide");
     expect(CONFIGURATION_GUIDE_TEMPLATE).toContain("repository-facing choices");

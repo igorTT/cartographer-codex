@@ -85,8 +85,10 @@ When updating an existing map:
 4. Run `git rev-parse HEAD` and keep the exact output as the refreshed `mapped_sha`.
 5. Spawn subagents only for changed or dependent areas.
 6. Preserve unchanged sections of the existing map when they still match the repository.
-7. Merge new findings into the canonical map structure.
-8. Refresh `mapped_sha`, `last_mapped`, `total_files`, and `total_tokens`.
+7. Preserve each unchanged section's existing `<!-- cartodex:paths ... -->` marker when the same paths are still covered.
+8. Revise a section's `cartodex:paths` marker only when the section's covered files or directory subtrees change.
+9. Merge new findings into the canonical map structure.
+10. Refresh `mapped_sha`, `last_mapped`, `total_files`, and `total_tokens`.
 
 If git is unavailable, explain the blocker and ask whether to run a full remap instead. Do not use timestamp-based fallback detection.
 
@@ -113,6 +115,8 @@ Merge subagent reports into one coherent map:
 - Deduplicate overlapping observations.
 - Resolve conflicts by checking source files or asking a scout subagent for a narrow verification.
 - Highlight cross-module flows and dependencies.
+- Emit one `<!-- cartodex:paths ... -->` marker directly under every structural section heading.
+- Use repo-relative literal file paths and directory prefixes ending in `/` in section path markers.
 - Keep the navigation guide practical for future contributors.
 - Include Mermaid diagrams only when they clarify real architecture or data flow.
 - Avoid inventing certainty; mark uncertain conclusions as inferred.
