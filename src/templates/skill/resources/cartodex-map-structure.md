@@ -4,6 +4,7 @@ Use this structure for the configured Cartodex map path. Replace bracketed notes
 
 ```markdown
 ---
+mapped_sha: FULL_GIT_COMMIT_SHA
 last_mapped: YYYY-MM-DDTHH:MM:SSZ
 total_files: N
 total_tokens: N
