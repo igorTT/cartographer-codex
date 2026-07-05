@@ -27,6 +27,7 @@ The command installs:
     cartodex-map-structure.md
     configuration-guide.md
     subagent-report-format.md
+    update-guide.md
   scripts/
     scan-codebase.mjs
 
@@ -50,9 +51,10 @@ Markdown guide Codex can read before changing the repository:
 
 ```markdown
 ---
-cartodex_version: 0.3.1
+mapped_sha: 0123456789abcdef0123456789abcdef01234567
 last_mapped: 2026-06-25T19:25:02Z
-map_path: docs/CARTODEX_MAP.md
+total_files: 42
+total_tokens: 12000
 ---
 
 # Cartodex Map
@@ -112,7 +114,9 @@ init` so the managed files match the configured values.
 
 The installed skill also includes `resources/configuration-guide.md`, a
 user-facing draft guide for configuration philosophy, common recipes, and
-choosing the smallest useful setting for a repository.
+choosing the smallest useful setting for a repository. It also installs
+`resources/update-guide.md` for old-format map or managed-asset migration
+situations.
 
 ## Init Behavior
 
@@ -153,9 +157,16 @@ tokens with `js-tiktoken`. The skill uses scanner output to plan parallel
 subagent assignments, then writes or updates the configured map path using the
 installed map structure resource.
 
-If the configured map path already exists, Cartodex uses its `last_mapped`
-frontmatter plus git history when available to focus update work on changed
-areas.
+If the configured map path already exists, Cartodex uses its `mapped_sha`
+frontmatter as the git baseline for update mode. The skill runs
+`git diff --name-only <mapped_sha>..HEAD` to focus update work on changed
+areas, then refreshes `mapped_sha` with `git rev-parse HEAD` when it writes the
+updated map. `last_mapped` remains visible human metadata and is not used for
+change detection.
+
+Maps without `mapped_sha` are old format. Update mode stops instead of falling
+back to timestamp-based git history, and the installed skill directs agents to
+`resources/update-guide.md`.
 
 ## Scout Agent
 

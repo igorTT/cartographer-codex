@@ -86,6 +86,11 @@ export const CONFIGURATION_GUIDE_TEMPLATE = withManagedMarker(
   `<!-- ${MANAGED_FILE_MARKER}: edit with care; rerun cartodex init --force to reset. -->`
 );
 
+export const UPDATE_GUIDE_TEMPLATE = withManagedMarker(
+  readTemplate("skill/resources/update-guide.md"),
+  `<!-- ${MANAGED_FILE_MARKER}: edit with care; rerun cartodex init --force to reset. -->`
+);
+
 export const SCAN_CODEBASE_TEMPLATE = withScriptManagedMarker(readTemplate("skill/scripts/scan-codebase.mjs"));
 
 export const CARTODEX_SCOUT_AGENT_TEMPLATE = withManagedMarker(
@@ -152,6 +157,10 @@ export const INIT_TEMPLATES: InitTemplate[] = [
   {
     targetPath: ".agents/skills/cartodex/resources/configuration-guide.md",
     contents: CONFIGURATION_GUIDE_TEMPLATE
+  },
+  {
+    targetPath: ".agents/skills/cartodex/resources/update-guide.md",
+    contents: UPDATE_GUIDE_TEMPLATE
   },
   {
     targetPath: ".agents/skills/cartodex/scripts/scan-codebase.mjs",

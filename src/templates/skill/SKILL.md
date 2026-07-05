@@ -29,8 +29,9 @@ Check for `{{mapPath}}`.
 If the map exists:
 
 1. Read the frontmatter.
-2. Extract `last_mapped`.
-3. Use update mode.
+2. Extract `mapped_sha`.
+3. If `mapped_sha` is missing, stop update mode with an old-format error and read `resources/update-guide.md`.
+4. Use update mode.
 
 If the map does not exist, use full mapping mode.
 
@@ -78,14 +79,34 @@ When available, use the `cartodex-scout` project agent for narrow read-only expl
 
 When updating an existing map:
 
-1. Run `git log --oneline --since="<last_mapped>"` when git is available.
-2. Identify changed files and affected modules from git output and current scan output.
-3. Spawn subagents only for changed or dependent areas.
-4. Preserve unchanged sections of the existing map when they still match the repository.
-5. Merge new findings into the canonical map structure.
-6. Refresh `last_mapped`, `total_files`, and `total_tokens`.
+1. Read `mapped_sha` from the map frontmatter. If it is missing, stop with an old-format error, read `resources/update-guide.md`, and do not use `last_mapped` or `git log --since` as fallback change detection.
+2. Run `git diff --name-only <mapped_sha>..HEAD` when git is available.
+3. Identify changed files and affected modules from git output and current scan output.
+4. Run `git rev-parse HEAD` and keep the exact output as the refreshed `mapped_sha`.
+5. Spawn subagents only for changed or dependent areas.
+6. Preserve unchanged sections of the existing map when they still match the repository.
+7. Preserve each unchanged section's existing `<!-- cartodex:paths ... -->` marker when the same paths are still covered.
+8. Revise a section's `cartodex:paths` marker only when the section's covered files or directory subtrees change.
+9. Merge new findings into the canonical map structure.
+10. Refresh `mapped_sha`, `last_mapped`, `total_files`, and `total_tokens`.
 
-If git is unavailable or the history does not cover the previous map, fall back to scanner output and targeted inspection. Be explicit about the fallback in the final response.
+If git is unavailable, explain the blocker and ask whether to run a full remap instead. Do not use timestamp-based fallback detection.
+
+If `git diff --name-only <mapped_sha>..HEAD` fails because the baseline commit is unavailable, explain the blocker and ask whether to run a full remap instead.
+
+`last_mapped` is visible human metadata only; do not use it for change detection.
+
+### 5A. Full Mapping Or Refresh Baseline
+
+Before writing a new map or refreshing an existing current-format map, get the current git commit SHA:
+
+```bash
+git rev-parse HEAD
+```
+
+Use the exact command output for `mapped_sha`. If git is unavailable during full mapping, explain the blocker and ask whether to continue with a map that cannot be updated incrementally.
+
+For refreshes, update `mapped_sha` to the current `HEAD` value and keep the visible "Last mapped" text matched to `last_mapped`.
 
 ### 6. Synthesize Reports
 
@@ -94,6 +115,8 @@ Merge subagent reports into one coherent map:
 - Deduplicate overlapping observations.
 - Resolve conflicts by checking source files or asking a scout subagent for a narrow verification.
 - Highlight cross-module flows and dependencies.
+- Emit one `<!-- cartodex:paths ... -->` marker directly under every structural section heading.
+- Use repo-relative literal file paths and directory prefixes ending in `/` in section path markers.
 - Keep the navigation guide practical for future contributors.
 - Include Mermaid diagrams only when they clarify real architecture or data flow.
 - Avoid inventing certainty; mark uncertain conclusions as inferred.

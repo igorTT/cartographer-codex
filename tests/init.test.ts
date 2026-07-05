@@ -11,6 +11,7 @@ import {
   CONFIGURATION_GUIDE_TEMPLATE,
   INIT_TEMPLATES,
   SUBAGENT_REPORT_FORMAT_TEMPLATE,
+  UPDATE_GUIDE_TEMPLATE,
   renderAgentsCartodexSection,
   renderCartodexScoutAgentTemplate,
   renderCartodexSkillTemplate
@@ -190,11 +191,46 @@ describe("initCartodex", () => {
     expect(CARTODEX_SKILL_TEMPLATE).toContain("unresolved: [reason]");
   });
 
+  it("requires generated map section path markers", () => {
+    expect(CARTODEX_MAP_STRUCTURE_TEMPLATE).toContain("<!-- cartodex:paths");
+    expect(CARTODEX_MAP_STRUCTURE_TEMPLATE).toContain("Every structural section heading must be followed");
+    expect(CARTODEX_MAP_STRUCTURE_TEMPLATE).toContain("A path ending in `/` covers a directory subtree");
+    expect(CARTODEX_MAP_STRUCTURE_TEMPLATE).toContain("Do not use gitignore-style globs");
+
+    expect(CARTODEX_SKILL_TEMPLATE).toContain("Emit one `<!-- cartodex:paths ... -->` marker");
+    expect(CARTODEX_SKILL_TEMPLATE).toContain("Preserve each unchanged section's existing `<!-- cartodex:paths ... -->` marker");
+    expect(CARTODEX_SKILL_TEMPLATE).toContain("Revise a section's `cartodex:paths` marker only when");
+  });
+
   it("installs a user-facing configuration guide", () => {
     expect(CONFIGURATION_GUIDE_TEMPLATE).toContain("Cartodex Configuration Guide");
     expect(CONFIGURATION_GUIDE_TEMPLATE).toContain("repository-facing choices");
     expect(CONFIGURATION_GUIDE_TEMPLATE).toContain("npx cartodex init --force");
     expect(CARTODEX_SKILL_TEMPLATE).toContain("resources/configuration-guide.md");
+  });
+
+  it("requires mapped SHA metadata and SHA-based update mode", () => {
+    expect(CARTODEX_MAP_STRUCTURE_TEMPLATE).toContain("mapped_sha: FULL_GIT_COMMIT_SHA");
+    expect(CARTODEX_MAP_STRUCTURE_TEMPLATE).toContain("last_mapped: YYYY-MM-DDTHH:MM:SSZ");
+    expect(CARTODEX_MAP_STRUCTURE_TEMPLATE).toContain("total_files: N");
+    expect(CARTODEX_MAP_STRUCTURE_TEMPLATE).toContain("total_tokens: N");
+
+    expect(CARTODEX_SKILL_TEMPLATE).toContain("git rev-parse HEAD");
+    expect(CARTODEX_SKILL_TEMPLATE).toContain("git diff --name-only <mapped_sha>..HEAD");
+    expect(CARTODEX_SKILL_TEMPLATE).toContain("stop update mode with an old-format error");
+    expect(CARTODEX_SKILL_TEMPLATE).toContain("resources/update-guide.md");
+    expect(CARTODEX_SKILL_TEMPLATE).toContain("do not use `last_mapped` or `git log --since`");
+  });
+
+  it("installs update guide resources for old-format maps", () => {
+    expect(UPDATE_GUIDE_TEMPLATE).toContain("Cartodex Update Guide");
+    expect(UPDATE_GUIDE_TEMPLATE).toContain("Maps without `mapped_sha` frontmatter are old format");
+    expect(UPDATE_GUIDE_TEMPLATE).toContain("Do not run normal update mode against timestamp-only maps");
+    expect(UPDATE_GUIDE_TEMPLATE).toContain("npx cartodex init --force");
+    expect(INIT_TEMPLATES).toContainEqual({
+      targetPath: ".agents/skills/cartodex/resources/update-guide.md",
+      contents: UPDATE_GUIDE_TEMPLATE
+    });
   });
 
   it("reports AGENTS.md as stale when configured mapPath changes", async () => {
