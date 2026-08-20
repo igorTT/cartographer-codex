@@ -44,7 +44,7 @@ node .agents/skills/cartodex/scripts/scan-codebase.mjs . --format json
 
 The scanner output should provide the file tree, per-file token estimates, directory token summaries, total files, total tokens, and skipped files. If the scanner is missing or fails, explain the blocker and use conservative repository inspection with `rg --files`, `find`, and targeted reads.
 
-The scanner automatically respects root `.gitignore` and optional root `cartodex.config.json` ignore patterns. Users can add a config file like `{"mapPath":"docs/CARTODEX_MAP.md","ignore":["docs/private/","local-notes.md"],"scoutAgent":{"model":"gpt-5.4-mini","reasoningEffort":"medium"}}` to set the map path, configure the scout agent, and exclude files from Cartodex without adding them to `.gitignore`.
+The scanner automatically respects root `.gitignore` and optional root `cartodex.config.json` ignore patterns. Users can add a config file like `{"mapPath":"docs/CARTODEX_MAP.md","ignore":["docs/private/","local-notes.md"],"scoutAgent":{"model":"gpt-5.6-luna","reasoningEffort":"high"}}` to set the map path, configure the scout agent, and exclude files from Cartodex without adding them to `.gitignore`.
 
 For user-facing configuration help, read `resources/configuration-guide.md` and answer from that guide. Keep configuration explanations focused on repository-facing choices and avoid exposing internal implementation details.
 

@@ -88,8 +88,8 @@ is written or to exclude files from Cartodex without changing `.gitignore`:
   "mapPath": "docs/CARTODEX_MAP.md",
   "ignore": ["docs/private/", "local-notes.md", "*.scratch.ts"],
   "scoutAgent": {
-    "model": "gpt-5.4-mini",
-    "reasoningEffort": "medium"
+    "model": "gpt-5.6-luna",
+    "reasoningEffort": "high"
   }
 }
 ```
@@ -101,10 +101,10 @@ Markdown path, stay inside the repository, and end with `.md`.
 `.gitignore`-style matching, including anchored paths, directory suffixes,
 globs, and `!` negation.
 
-`scoutAgent.model` defaults to `gpt-5.4-mini`. Set it to another Codex-supported
+`scoutAgent.model` defaults to `gpt-5.6-luna`. Set it to another Codex-supported
 model, such as `gpt-5.3-codex-spark` on eligible Pro plans, to change the
 installed read-only scout agent. `scoutAgent.reasoningEffort` defaults to
-`medium`.
+`high`.
 
 If you add or change `mapPath`, `scoutAgent.model`, or
 `scoutAgent.reasoningEffort` after installing Cartodex, rerun `npx cartodex
