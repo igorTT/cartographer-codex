@@ -7,7 +7,7 @@ const program = new Command();
 program
   .name("cartodex")
   .description("Cartodex repository initializer for Codex.")
-  .version("0.3.1");
+  .version("0.3.2");
 
 registerInitCommand(program);
 
