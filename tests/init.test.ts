@@ -10,6 +10,7 @@ import {
   CARTODEX_SKILL_TEMPLATE,
   CONFIGURATION_GUIDE_TEMPLATE,
   INIT_TEMPLATES,
+  SCAN_CODEBASE_TEMPLATE,
   SUBAGENT_REPORT_FORMAT_TEMPLATE,
   renderAgentsCartodexSection,
   renderCartodexScoutAgentTemplate,
@@ -52,6 +53,21 @@ describe("findGitRoot", () => {
 });
 
 describe("initCartodex", () => {
+  it("installs the generated scanner with its shebang, managed marker, and ESLint disable banner", async () => {
+    const repo = await makeRepo();
+
+    const result = await initCartodex({ cwd: repo });
+    expect(result.exitCode).toBe(0);
+
+    const scanner = await readFile(join(repo, ".agents/skills/cartodex/scripts/scan-codebase.mjs"), "utf8");
+    expect(scanner).toBe(SCAN_CODEBASE_TEMPLATE);
+    expect(scanner.split("\n").slice(0, 3)).toEqual([
+      "#!/usr/bin/env node",
+      "// cartodex-managed: edit with care; rerun cartodex init --force to reset.",
+      "/* eslint-disable */"
+    ]);
+  });
+
   it("keeps installed skill frontmatter at the start of SKILL.md", () => {
     const frontmatterEnd = CARTODEX_SKILL_TEMPLATE.indexOf("\n---\n", 4) + "\n---\n".length;
 
