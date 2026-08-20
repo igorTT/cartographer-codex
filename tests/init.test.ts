@@ -161,10 +161,10 @@ describe("initCartodex", () => {
       CARTODEX_SCOUT_AGENT_TEMPLATE
     );
     await expect(readFile(join(repo, ".codex/agents/cartodex-scout.toml"), "utf8")).resolves.toContain(
-      'model = "gpt-5.4-mini"'
+      'model = "gpt-5.6-luna"'
     );
     await expect(readFile(join(repo, ".codex/agents/cartodex-scout.toml"), "utf8")).resolves.toContain(
-      'model_reasoning_effort = "medium"'
+      'model_reasoning_effort = "high"'
     );
   });
 
@@ -234,7 +234,7 @@ describe("initCartodex", () => {
     const repo = await makeRepo();
     await writeFile(join(repo, "cartodex.config.json"), JSON.stringify({
       scoutAgent: {
-        model: "gpt-5.4-mini"
+        model: "gpt-5.6-luna"
       }
     }));
     await initCartodex({ cwd: repo });

@@ -3,6 +3,6 @@
   "ignore": [],
   "scoutAgent": {
     "model": "gpt-5.3-codex-spark",
-    "reasoningEffort": "medium"
+    "reasoningEffort": "high"
   }
 }
