@@ -75,10 +75,10 @@ describe("initCartodex", () => {
     await expect(
       readFile(join(repo, ".agents/skills/cartodex/scripts/tools/package-lock.json"), "utf8")
     ).resolves.toBe(SCANNER_TOOLS_PACKAGE_LOCK_TEMPLATE);
-    expect(SCANNER_TOOLS_PACKAGE_TEMPLATE).toContain('"@cartodex/runtime": "0.3.2"');
-    expect(SCANNER_TOOLS_PACKAGE_LOCK_TEMPLATE).toContain('"@cartodex/runtime": "0.3.2"');
+    expect(SCANNER_TOOLS_PACKAGE_TEMPLATE).toContain('"@cartodex/runtime": "0.1.0"');
+    expect(SCANNER_TOOLS_PACKAGE_LOCK_TEMPLATE).toContain('"@cartodex/runtime": "0.1.0"');
     expect(SCANNER_TOOLS_PACKAGE_LOCK_TEMPLATE).toContain(
-      '"resolved": "https://registry.npmjs.org/@cartodex/runtime/-/runtime-0.3.2.tgz"'
+      '"resolved": "https://registry.npmjs.org/@cartodex/runtime/-/runtime-0.1.0.tgz"'
     );
     expect(scanner).toContain('requireFromTools.resolve("@cartodex/runtime")');
     expect(INIT_TEMPLATES.map((template) => template.targetPath)).not.toContain(
