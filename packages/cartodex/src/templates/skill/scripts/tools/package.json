@@ -7,6 +7,6 @@
   },
   "packageManager": "npm@11.12.1",
   "dependencies": {
-    "@cartodex/runtime": "0.1.0"
+    "@cartodex/runtime": "^0.1.0"
   }
 }

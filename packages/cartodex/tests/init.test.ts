@@ -12,7 +12,6 @@ import {
   INIT_TEMPLATES,
   RETIRED_MANAGED_TEMPLATE_PATHS,
   SCAN_CODEBASE_TEMPLATE,
-  SCANNER_TOOLS_PACKAGE_LOCK_TEMPLATE,
   SCANNER_TOOLS_PACKAGE_TEMPLATE,
   SUBAGENT_REPORT_FORMAT_TEMPLATE,
   renderAgentsCartodexSection,
@@ -73,13 +72,9 @@ describe("initCartodex", () => {
       readFile(join(repo, ".agents/skills/cartodex/scripts/tools/package.json"), "utf8")
     ).resolves.toBe(SCANNER_TOOLS_PACKAGE_TEMPLATE);
     await expect(
-      readFile(join(repo, ".agents/skills/cartodex/scripts/tools/package-lock.json"), "utf8")
-    ).resolves.toBe(SCANNER_TOOLS_PACKAGE_LOCK_TEMPLATE);
-    expect(SCANNER_TOOLS_PACKAGE_TEMPLATE).toContain('"@cartodex/runtime": "0.1.0"');
-    expect(SCANNER_TOOLS_PACKAGE_LOCK_TEMPLATE).toContain('"@cartodex/runtime": "0.1.0"');
-    expect(SCANNER_TOOLS_PACKAGE_LOCK_TEMPLATE).toContain(
-      '"resolved": "https://registry.npmjs.org/@cartodex/runtime/-/runtime-0.1.0.tgz"'
-    );
+      access(join(repo, ".agents/skills/cartodex/scripts/tools/package-lock.json"))
+    ).rejects.toMatchObject({ code: "ENOENT" });
+    expect(SCANNER_TOOLS_PACKAGE_TEMPLATE).toContain('"@cartodex/runtime": "^0.1.0"');
     expect(scanner).toContain('requireFromTools.resolve("@cartodex/runtime")');
     expect(INIT_TEMPLATES.map((template) => template.targetPath)).not.toContain(
       ".agents/skills/cartodex/scripts/tools/dist/scan-codebase.mjs"
@@ -138,6 +133,43 @@ describe("initCartodex", () => {
     expect(result.exitCode).toBe(1);
     expect(result.files.find((file) => file.targetPath === RETIRED_MANAGED_TEMPLATE_PATHS[0])?.status).toBe("conflict");
     await expect(readFile(retiredPath, "utf8")).resolves.toContain("userOwned");
+  });
+
+  it("removes a legacy Cartodex tools lockfile with --force", async () => {
+    const repo = await makeRepo();
+    await initCartodex({ cwd: repo });
+    const retiredPath = join(repo, ".agents/skills/cartodex/scripts/tools/package-lock.json");
+    await writeFile(retiredPath, JSON.stringify({
+      name: "cartodex-skill-tools",
+      lockfileVersion: 3,
+      packages: {
+        "": {
+          name: "cartodex-skill-tools",
+          dependencies: { "@cartodex/runtime": "0.1.0" }
+        }
+      }
+    }));
+
+    const blocked = await initCartodex({ cwd: repo });
+    expect(blocked.exitCode).toBe(1);
+    expect(blocked.files.find((file) => file.targetPath === retiredPath.slice(repo.length + 1))?.status).toBe("stale");
+
+    const forced = await initCartodex({ cwd: repo, force: true });
+    expect(forced.exitCode).toBe(0);
+    await expect(access(retiredPath)).rejects.toMatchObject({ code: "ENOENT" });
+  });
+
+  it("preserves an unrelated tools lockfile even with --force", async () => {
+    const repo = await makeRepo();
+    const retiredPath = join(repo, ".agents/skills/cartodex/scripts/tools/package-lock.json");
+    await mkdir(join(retiredPath, ".."), { recursive: true });
+    await writeFile(retiredPath, JSON.stringify({ name: "user-owned-tools", lockfileVersion: 3 }));
+
+    const result = await initCartodex({ cwd: repo, force: true });
+
+    expect(result.exitCode).toBe(1);
+    expect(result.files.find((file) => file.targetPath === retiredPath.slice(repo.length + 1))?.status).toBe("conflict");
+    await expect(access(retiredPath)).resolves.toBeUndefined();
   });
 
   it("renders the default mapPath into prompts when config is missing", async () => {

@@ -154,11 +154,34 @@ async function analyzeRetiredTemplate(repoRoot: string, targetPath: string): Pro
 
   return {
     targetPath,
-    status: existing.includes(MANAGED_FILE_MARKER) ? "stale" : "conflict",
+    status: isManagedRetiredTemplate(targetPath, existing) ? "stale" : "conflict",
     write: async () => {
       await rm(absolutePath);
     }
   };
+}
+
+function isManagedRetiredTemplate(targetPath: string, contents: string): boolean {
+  if (contents.includes(MANAGED_FILE_MARKER)) {
+    return true;
+  }
+
+  if (targetPath !== ".agents/skills/cartodex/scripts/tools/package-lock.json") {
+    return false;
+  }
+
+  try {
+    const lockfile = JSON.parse(contents) as {
+      name?: unknown;
+      packages?: { ""?: { name?: unknown; dependencies?: Record<string, unknown> } };
+    };
+    const rootPackage = lockfile.packages?.[""];
+    return lockfile.name === "cartodex-skill-tools"
+      && rootPackage?.name === "cartodex-skill-tools"
+      && typeof rootPackage.dependencies?.["@cartodex/runtime"] === "string";
+  } catch {
+    return false;
+  }
 }
 
 export function upsertAgentsSection(existing: string, mapPath = DEFAULT_MAP_PATH): string {
