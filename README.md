@@ -32,7 +32,6 @@ The command installs:
     tools/
       .gitignore
       package.json
-      package-lock.json
 
 .codex/agents/
   cartodex-scout.toml
@@ -148,12 +147,25 @@ The installed skill runs:
 node .agents/skills/cartodex/scripts/scan-codebase.mjs . --format json
 ```
 
-On the first run, the small launcher installs an exact `@cartodex/runtime`
-version and its dependencies inside `scripts/tools/node_modules` with `npm ci`.
-Later runs reuse that local runtime until the installed lockfile changes. The
+On the first run, the small launcher installs the latest compatible
+`@cartodex/runtime` and its dependencies inside `scripts/tools/node_modules`
+with `npm install --package-lock=false`. Later runs reuse that local runtime
+until `scripts/tools/package.json` changes or `node_modules` is removed. The
 runtime cache is ignored by Git and does not use or modify the repository's
-root dependencies or lockfile. The nested install always uses npm and remains
-isolated when the host repository uses npm, Yarn, or pnpm.
+root dependencies or lockfile. The nested install never reads or creates a
+lockfile and remains isolated when the host repository uses npm, Yarn, or pnpm.
+
+Existing installations update only when the user asks. Update the runtime in
+place with:
+
+```bash
+npm update @cartodex/runtime \
+  --prefix .agents/skills/cartodex/scripts/tools \
+  --package-lock=false
+```
+
+Alternatively, delete `.agents/skills/cartodex/scripts/tools/node_modules`.
+The next Cartodex invocation will perform a cold installation.
 
 The scanner respects common generated/dependency ignores, the repository root
 `.gitignore`, and optional root `cartodex.config.json` ignore patterns. It also
@@ -169,9 +181,10 @@ scanner implementation as `@cartodex/runtime`. The installed launcher imports
 the runtime package from its private tools directory; it does not ship a second
 bundled copy of the scanner.
 
-The packages use independent semantic versions. Each `cartodex` release pins
-the exact published `@cartodex/runtime` version it consumes, so the runtime can
-start at `0.1.0` without matching the installer version.
+The packages use independent semantic versions. The installed skill declares
+`@cartodex/runtime` as `^0.1.0`, so new cold installations can pick up `0.1.x`
+patch releases without a new `cartodex` release, while `0.2.0` remains excluded
+until the skill deliberately adopts the breaking runtime line.
 
 If the configured map path already exists, Cartodex uses its `last_mapped`
 frontmatter plus git history when available to focus update work on changed

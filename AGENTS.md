@@ -29,7 +29,7 @@ Recent commits use short, imperative summaries such as `Add npm package metadata
 
 ## Release Coordination
 
-Version `cartodex` and `@cartodex/runtime` independently. The nested `packages/cartodex/src/templates/skill/scripts/tools/package.json` must depend on the selected published runtime version exactly, and its `package-lock.json` is a shipped runtime asset. When the installer adopts a new runtime, publish `@cartodex/runtime` first, regenerate the nested lockfile from that registry release, validate both package tarballs, and then publish `cartodex`. Do not hand-edit registry integrity values. The root lockfile is for monorepo development and is not shipped in either package.
+Version `cartodex` and `@cartodex/runtime` independently. The nested `packages/cartodex/src/templates/skill/scripts/tools/package.json` declares the compatible runtime line and intentionally has no lockfile. Compatible runtime patches can be published without republishing `cartodex`; new cold skill installations resolve them while existing installations remain unchanged. A breaking runtime line requires a corresponding skill manifest update and `cartodex` release. Validate both package tarballs when changing the launcher or runtime range. The root lockfile is for monorepo development and is not shipped in either package.
 
 ## Security & Configuration Tips
 

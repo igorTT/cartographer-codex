@@ -1,6 +1,6 @@
 ---
 name: prepare-release
-description: Prepare a Cartodex monorepo release by coordinating the independently versioned cartodex and @cartodex/runtime packages, validating their tarballs, and handling the runtime-first publication boundary when the installer adopts a new runtime. Use when the user asks to bump a version, prepare or cut a release, merge release work, tag a version, or get Cartodex ready for npm publication.
+description: Prepare Cartodex monorepo releases by coordinating the independently versioned cartodex and @cartodex/runtime packages and validating their tarballs and compatibility range. Use when the user asks to bump a version, prepare or cut a release, merge release work, tag a version, or get Cartodex ready for npm publication.
 ---
 
 # Prepare Release
@@ -8,20 +8,20 @@ description: Prepare a Cartodex monorepo release by coordinating the independent
 ## Cartodex Release Invariants
 
 - Version `cartodex` and `@cartodex/runtime` independently according to the changes in each package. A coordinated release may use versions such as `cartodex@0.4.0` with `@cartodex/runtime@0.1.0`.
-- Pin the exact published `@cartodex/runtime` version consumed by the installer in `packages/cartodex/src/templates/skill/scripts/tools/package.json`.
-- Treat the nested tools `package-lock.json` as a shipped runtime asset. Generate it with npm from the published runtime; never hand-edit its registry URL or integrity.
-- When `cartodex` adopts an unpublished runtime version, publish `@cartodex/runtime` first. The installer cannot be declared registry-ready until its nested lockfile has been regenerated and verified against that published runtime.
+- Keep the compatible `@cartodex/runtime` range in `packages/cartodex/src/templates/skill/scripts/tools/package.json`. For the current `0.x` line, `^0.1.0` admits `0.1.x` patches and excludes `0.2.0`.
+- Do not add a nested tools `package-lock.json`. The launcher intentionally installs with `--package-lock=false` so new cold installations resolve the latest compatible runtime while warm installations remain user-controlled.
+- A compatible runtime patch does not require a `cartodex` release. A new incompatible runtime line requires a corresponding skill manifest update and installer release.
 - Treat the root `package-lock.json` as monorepo development state, not as a file shipped by either package.
 
 ## Workflow
 
-Use two release stages when the installer adopts a new runtime because its shipped lockfile cannot be finalized until that runtime exists on npm. Runtime-only and installer-only releases do not need artificial companion version bumps.
+Runtime-only and installer-only releases do not need artificial companion version bumps. Coordinate publication order only when a new installer range depends on a runtime line that is not yet available from npm.
 
 1. Determine the package targets.
    - Identify which package or packages are being released and use the versions explicitly provided by the user or already established in the dialog.
    - If a required version is unavailable, ask before editing files.
    - Choose each version independently. For the first runtime release alongside the next Cartodex feature release, `@cartodex/runtime@0.1.0` and `cartodex@0.4.0` are valid targets.
-   - Record the exact published runtime version that the installer will consume, whether it is new in this release or already available.
+   - Record the runtime compatibility range used by the installer and whether the release changes that range.
 
 2. Inspect state and prepare the release branch.
    - Run `git branch --show-current`, `git status --short`, and inspect all relevant manifests and lockfiles.
@@ -35,23 +35,23 @@ Use two release stages when the installer adopts a new runtime because its shipp
    - Inspect the runtime tarball for compiled ESM, declarations, production metadata, license, and notice. It must not contain workspace-only files or a binary.
    - Commit and push the runtime candidate. Get that commit onto the primary branch through the repository's normal merge or PR process before publication.
 
-4. Cross the runtime publication boundary only with explicit authorization when publishing a new runtime.
-   - Without authorization to publish, stop here. Report that runtime publication and any installer stage adopting it are still pending; do not claim that `cartodex` is registry-ready.
-   - With authorization, publish `@cartodex/runtime`, then verify that the exact version and tarball metadata are available from npm.
+4. Publish a required new runtime only with explicit authorization.
+   - Without authorization to publish, stop before any installer stage whose compatibility range depends on that unpublished runtime line; do not claim that installer is registry-ready.
+   - With authorization, publish `@cartodex/runtime`, then verify that the version and tarball metadata are available from npm.
    - Record the runtime package version and source commit independently from the installer version.
 
-5. Prepare the installer stage after its selected runtime is available.
+5. Prepare the installer stage when an installer release is required.
    - Bump `packages/cartodex/package.json` and its workspace entry in the root lockfile to the independently selected installer version.
-   - Pin the exact selected runtime version in the nested tools `package.json`; it does not need to match the installer version.
-   - From the nested tools directory, regenerate `package-lock.json` with npm against the published runtime. Verify its registry URL and integrity; never copy or fabricate those values.
+   - Change the nested tools runtime range only when the skill deliberately adopts a different compatibility line. Do not change it merely for a compatible runtime patch.
+   - Confirm the nested tools directory has no `package-lock.json` and the launcher uses `npm install --package-lock=false`.
    - Search for the previous version and update CLI-visible metadata or documentation when required.
    - Run tests, type-checking, the build, `npm run pack:runtime`, and `npm run pack:cartodex`.
-   - Confirm the `cartodex` tarball contains the thin launcher, nested manifests, and `.gitignore` template without `node_modules`, install stamps, or a bundled scanner implementation.
-   - Run a cold and warm temporary-consumer smoke test when the bootstrap or nested lockfile changed.
+   - Confirm the `cartodex` tarball contains the thin launcher, tools manifest, and `.gitignore` template without a nested lockfile, `node_modules`, install stamps, or a bundled scanner implementation.
+   - Run cold-install, warm-reuse, and manifest-hash invalidation smoke tests when the bootstrap or runtime range changes.
 
 6. Commit and push the completed release.
    - Stage only release-related files and use the repository's version-oriented commit style.
-   - Push the release branch, including the registry-generated nested lockfile.
+   - Push the release branch.
 
 7. Merge to the primary branch, or open a release PR.
    - Prefer the repository's normal primary-branch and review workflow. Use fast-forward merges when appropriate.
@@ -60,7 +60,7 @@ Use two release stages when the installer adopts a new runtime because its shipp
 
 8. Tag and optionally publish the installer.
    - Create and push the repository's normal `vX.Y.Z` tag for the installer version only after all required runtime and installer stages are present on the remote primary branch.
-   - Publish `cartodex` only with explicit user authorization and only after the runtime and nested lockfile are verified.
+   - Publish `cartodex` only with explicit user authorization and, when its range adopts a new runtime line, only after a compatible runtime is verified on npm.
    - Track any runtime tag or release record independently according to the repository's runtime release convention.
    - End with the final branch, runtime and installer versions and commits, tag status, validations, publication status for each package, and any remaining unrelated local files.
 
