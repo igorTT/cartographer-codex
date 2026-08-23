@@ -1,62 +1,65 @@
 ---
 name: prepare-release
-description: Prepare a repository release by determining or asking for the target version, bumping version fields, validating with tests/build/package dry-run, committing, pushing, merging to main, tagging, and leaving the package ready to publish. Use when the user asks to bump a version, prepare a release, cut a release, merge release work, tag a version, or get an npm/package repository ready for publication.
+description: Prepare a Cartodex monorepo release by coordinating the aligned cartodex and @cartodex/runtime packages, validating both tarballs, and handling the runtime-first publication boundary. Use when the user asks to bump a version, prepare or cut a release, merge release work, tag a version, or get Cartodex ready for npm publication.
 ---
 
 # Prepare Release
 
+## Cartodex Release Invariants
+
+- Keep `packages/cartodex/package.json` and `packages/runtime/package.json` on the same version in the completed release; the runtime-first stage temporarily advances only the runtime.
+- Pin `@cartodex/runtime` to that exact version in `packages/cartodex/src/templates/skill/scripts/tools/package.json`.
+- Treat the nested tools `package-lock.json` as a shipped runtime asset. Generate it with npm from the published runtime; never hand-edit its registry URL or integrity.
+- Publish `@cartodex/runtime` before `cartodex`. The installer cannot be declared registry-ready until its nested lockfile has been regenerated and verified against the published runtime.
+- Treat the root `package-lock.json` as monorepo development state, not as a file shipped by either package.
+
 ## Workflow
 
-Use this skill for repository release preparation. Follow the repository's local instructions first, then adapt this workflow to the package manager and project conventions already present.
+Use two release stages because the installer's shipped lockfile cannot be finalized until the matching runtime exists on npm.
 
 1. Determine the target version.
-   - Use the version explicitly provided by the user.
-   - If the current dialog already makes the version clear, use that version.
-   - If no version is available, ask the user for the target version before editing files.
-   - Prefer the repository's versioning convention. For npm packages, update both `package.json` and `package-lock.json` when present.
+   - Use the version explicitly provided by the user or already established in the dialog.
+   - If no version is available, ask before editing files.
+   - The final release state must use the same version for both publishable packages.
 
-2. Inspect state before changing anything.
-   - Run `git branch --show-current`, `git status --short`, and inspect relevant version files.
-   - Identify unrelated untracked or modified files and leave them alone.
-   - If staged changes already exist, preserve them and add only release-related files.
-   - Use a release branch named `chore/release-vX.Y.Z`, for example `chore/release-v1.2.3`.
-   - Create the release branch from an up-to-date `dev` branch.
+2. Inspect state and prepare the release branch.
+   - Run `git branch --show-current`, `git status --short`, and inspect all relevant manifests and lockfiles.
+   - Preserve unrelated changes and stage only release work.
+   - Use `chore/release-vX.Y.Z`, created from the repository's up-to-date release base branch.
 
-3. Bump version fields consistently.
-   - Update package metadata and lockfiles.
-   - Update any CLI-visible hardcoded version strings when the project has them.
-   - Search for the previous version with `rg` to catch obvious drift.
-   - Regenerate generated artifacts if the repository build process expects it.
+3. Prepare the runtime stage.
+   - Bump `packages/runtime/package.json` and its workspace entry in the root lockfile.
+   - Search for the previous version and update runtime-facing documentation or metadata that must match it.
+   - Run tests, type-checking, the build, and `npm run pack:runtime`.
+   - Inspect the runtime tarball for compiled ESM, declarations, production metadata, license, and notice. It must not contain workspace-only files or a binary.
+   - Commit and push the runtime candidate. Get that commit onto the primary branch through the repository's normal merge or PR process, but do not tag the combined Cartodex release yet.
 
-4. Validate before committing.
-   - Run the repository's test command.
-   - Run the build command when source or packaged artifacts changed.
-   - Run the package dry-run command before publishing readiness, such as `npm pack --dry-run` for npm packages.
-   - If a command fails because of sandbox/cache/network permissions and it is needed for release prep, rerun it with the required approval.
+4. Cross the runtime publication boundary only with explicit authorization.
+   - Without authorization to publish, stop here. Report that runtime publication and the installer stage are still pending; do not claim that `cartodex` is registry-ready.
+   - With authorization, publish `@cartodex/runtime`, then verify that the exact version and tarball metadata are available from npm.
 
-5. Commit and push.
-   - Stage only release-related files.
-   - Use an imperative or version-oriented commit message matching repository history, such as `v1.2.3: Prepare release`.
-   - Push the working branch.
+5. Prepare the installer stage after the runtime is available.
+   - Bump `packages/cartodex/package.json` and its workspace entry in the root lockfile to the same version as the runtime.
+   - Pin that exact runtime version in the nested tools `package.json`.
+   - From the nested tools directory, regenerate `package-lock.json` with npm against the published runtime. Verify its registry URL and integrity; never copy or fabricate those values.
+   - Search for the previous version and update CLI-visible metadata or documentation when required.
+   - Run tests, type-checking, the build, `npm run pack:runtime`, and `npm run pack:cartodex`.
+   - Confirm the `cartodex` tarball contains the thin launcher, nested manifests, and `.gitignore` template without `node_modules`, install stamps, or a bundled scanner implementation.
+   - Run a cold and warm temporary-consumer smoke test when the bootstrap or nested lockfile changed.
 
-6. Merge to the primary branch, or open a release PR.
-   - Use the repository's primary branch, usually `main`, unless the user or repo says otherwise.
-   - Switch to the primary branch, update it with `git pull --ff-only`, then prefer a fast-forward merge from the release branch.
-   - Push the primary branch after a successful merge.
-   - If the primary branch is protected or rejects direct pushes, do not force-push or bypass protection. Open a PR from the release branch to the primary branch instead.
-   - If repository policy blocks immediate merge because review, checks, or other requirements are pending, leave the PR open and report the blocker.
-   - If auto-merge is unavailable or disabled, report that manual merge is required after branch protection requirements pass.
-   - If a local fast-forward merge succeeded but the push was rejected by branch protection, treat the remote primary branch as the source of truth and leave tagging for after the PR is merged.
+6. Commit and push the completed release.
+   - Stage only release-related files and use the repository's version-oriented commit style.
+   - Push the release branch, including the registry-generated nested lockfile.
 
-7. Tag the release.
-   - Match existing tag style. If prior tags are lightweight `vX.Y.Z`, create the same style.
-   - Create and push the tag only after the release commit is present on the remote primary branch.
-   - If the release PR is still open or blocked, do not create the tag yet. Report the pending tag name and the condition required before tagging.
+7. Merge to the primary branch, or open a release PR.
+   - Prefer the repository's normal primary-branch and review workflow. Use fast-forward merges when appropriate.
+   - Never bypass branch protection or force-push. If review or checks are pending, leave the PR open and report the blocker.
+   - Treat the remote primary branch as the source of truth before tagging.
 
-8. Prepare to publish.
-   - Confirm `npm pack --dry-run` or the equivalent package dry-run passes and report package name, version, and notable tarball details.
-   - Do not run the actual publish command unless the user explicitly asks to publish.
-   - End with the final branch, commit, tag, validation performed, and any remaining unrelated local files.
+8. Tag and optionally publish the installer.
+   - Create and push the repository's normal `vX.Y.Z` tag only after both release stages are present on the remote primary branch.
+   - Publish `cartodex` only with explicit user authorization and only after the runtime and nested lockfile are verified.
+   - End with the final branch, runtime and installer commits, tag status, validations, publication status for each package, and any remaining unrelated local files.
 
 ## Git Safety
 
@@ -76,5 +79,5 @@ Keep the release handoff concise. Include:
 - PR URL and blocker status when primary-branch protection prevents direct merge
 - tag pushed, or tag pending because the release PR is not merged yet
 - validations run
-- publish-readiness result
+- publish/readiness result for both `@cartodex/runtime` and `cartodex`
 - remaining local changes, if any

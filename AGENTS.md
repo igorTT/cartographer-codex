@@ -27,6 +27,10 @@ Tests use Vitest and are named `*.test.ts`. Place CLI and init tests under `pack
 
 Recent commits use short, imperative summaries such as `Add npm package metadata` or version-oriented messages like `v1.4.0: Add UV inline script dependencies`. Keep commits focused and avoid bundling unrelated refactors. Pull requests should explain the user-facing change, list validation performed (`npm test`, `npm run build`), link related issues when available, and mention any template or generated-file updates.
 
+## Release Coordination
+
+Keep the final published `cartodex` and `@cartodex/runtime` versions aligned. The nested `packages/cartodex/src/templates/skill/scripts/tools/package.json` must depend on the matching runtime version exactly, and its `package-lock.json` is a shipped runtime asset. Publish `@cartodex/runtime` first, regenerate the nested lockfile from that registry release, validate both package tarballs, and then publish `cartodex`. Do not hand-edit registry integrity values. The root lockfile is for monorepo development and is not shipped in either package.
+
 ## Security & Configuration Tips
 
 Do not commit local secrets, npm tokens, or user-specific Codex configuration. Be careful when changing `packages/cartodex/src/templates/AGENTS.cartodex.md` or files under `.codex`/`.agents` templates, because `cartodex init` installs them into user repositories.

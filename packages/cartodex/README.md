@@ -30,6 +30,7 @@ The command installs:
   scripts/
     scan-codebase.mjs
     tools/
+      .gitignore
       package.json
       package-lock.json
 
@@ -53,9 +54,9 @@ Markdown guide Codex can read before changing the repository:
 
 ```markdown
 ---
-cartodex_version: 0.3.1
 last_mapped: 2026-06-25T19:25:02Z
-map_path: docs/CARTODEX_MAP.md
+total_files: 42
+total_tokens: 31200
 ---
 
 # Cartodex Map
