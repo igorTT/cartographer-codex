@@ -32,8 +32,6 @@ The command installs:
     tools/
       package.json
       package-lock.json
-      dist/
-        scan-codebase.mjs
 
 .codex/agents/
   cartodex-scout.toml
@@ -149,10 +147,12 @@ The installed skill runs:
 node .agents/skills/cartodex/scripts/scan-codebase.mjs . --format json
 ```
 
-On the first run, the small launcher installs its pinned scanner dependencies
-inside `scripts/tools/node_modules` with `npm ci`. Later runs reuse that local
-runtime until the installed lockfile changes. The runtime cache is ignored by
-Git and does not use or modify the repository's root dependencies.
+On the first run, the small launcher installs an exact `@cartodex/runtime`
+version and its dependencies inside `scripts/tools/node_modules` with `npm ci`.
+Later runs reuse that local runtime until the installed lockfile changes. The
+runtime cache is ignored by Git and does not use or modify the repository's
+root dependencies or lockfile. The nested install always uses npm and remains
+isolated when the host repository uses npm, Yarn, or pnpm.
 
 The scanner respects common generated/dependency ignores, the repository root
 `.gitignore`, and optional root `cartodex.config.json` ignore patterns. It also
@@ -162,6 +162,11 @@ recompute nested totals. It skips binary and very large files, and estimates
 tokens with `js-tiktoken`. The skill uses scanner output to plan parallel
 subagent assignments, then writes or updates the configured map path using the
 installed map structure resource.
+
+The monorepo publishes the installer as `cartodex` and the deterministic
+scanner implementation as `@cartodex/runtime`. The installed launcher imports
+the runtime package from its private tools directory; it does not ship a second
+bundled copy of the scanner.
 
 If the configured map path already exists, Cartodex uses its `last_mapped`
 frontmatter plus git history when available to focus update work on changed

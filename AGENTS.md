@@ -2,15 +2,16 @@
 
 ## Project Structure & Module Organization
 
-Cartodex is an npm-workspaces repository whose published TypeScript CLI package lives in `packages/cartodex/`. Its source files live in `packages/cartodex/src/`: `src/cli.ts` is the executable entry point, `src/commands/` contains CLI commands, `src/init/` handles repository asset installation, and `src/scanner/` contains the codebase scanner. Package templates are stored in `packages/cartodex/src/templates/`, including the bundled scanner script generated at `packages/cartodex/src/templates/skill/scripts/tools/dist/scan-codebase.mjs`. Tests live in `packages/cartodex/tests/` and mirror the feature area they cover. `packages/cartodex/dist/` is build output and should not be edited by hand.
+Cartodex is an npm-workspaces repository with two published TypeScript packages. `packages/cartodex/` contains the `cartodex` CLI and repository-asset templates: `src/cli.ts` is the executable entry point, `src/commands/` contains CLI commands, and `src/init/` handles repository asset installation. `packages/runtime/` contains the publishable `@cartodex/runtime` scanner implementation under `src/scanner/` and exposes it through `src/index.ts`. Each package owns its tests and generated `dist/` output; never edit `dist/` by hand.
 
 ## Build, Test, and Development Commands
 
 - `npm install`: install all workspace dependencies using the committed root `package-lock.json`.
-- `npm run build`: bundle the scanner template with esbuild, then compile the `cartodex` workspace into `packages/cartodex/dist/`.
-- `npm run build:scanner`: regenerate only `packages/cartodex/src/templates/skill/scripts/tools/dist/scan-codebase.mjs`.
-- `npm test`: regenerate the scanner bundle, then run the Vitest test suite once.
+- `npm run build`: compile all publishable workspaces into their package-local `dist/` directories.
+- `npm test`: run the Vitest suites for all workspaces once.
+- `npm run typecheck`: type-check all workspaces without emitting files.
 - `npm run pack:cartodex`: preview the `cartodex` workspace package contents after a successful build.
+- `npm run pack:runtime`: preview the `@cartodex/runtime` workspace package contents after a successful build.
 
 The package requires Node.js `>=20` and uses npm as its package manager.
 
@@ -20,7 +21,7 @@ Use TypeScript ES modules with explicit `.js` extensions in relative imports, ma
 
 ## Testing Guidelines
 
-Tests use Vitest and are named `*.test.ts`. Place new tests under `packages/cartodex/tests/`, grouped by feature such as `packages/cartodex/tests/scanner/scan-codebase.test.ts`. Prefer focused tests that exercise public behavior: CLI argument parsing, scanner filtering, template installation, and filesystem edge cases. Run `npm test` before opening a pull request, and run `npm run build` when changes touch `packages/cartodex/src/` or packaged templates.
+Tests use Vitest and are named `*.test.ts`. Place CLI and init tests under `packages/cartodex/tests/`; place scanner/runtime tests under `packages/runtime/tests/`. Prefer focused tests that exercise public behavior: CLI argument parsing, scanner filtering, template installation, and filesystem edge cases. Run `npm test` before opening a pull request, and run `npm run build` when changes touch either package's source or packaged templates.
 
 ## Commit & Pull Request Guidelines
 

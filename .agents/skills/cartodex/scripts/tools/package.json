@@ -7,7 +7,6 @@
   },
   "packageManager": "npm@11.12.1",
   "dependencies": {
-    "js-tiktoken": "1.0.21",
-    "minimatch": "10.2.5"
+    "@cartodex/runtime": "0.3.2"
   }
 }

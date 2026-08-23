@@ -1,7 +1,7 @@
 {
-  "name": "cartodex",
+  "name": "@cartodex/runtime",
   "version": "0.3.2",
-  "description": "Initialize Cartodex repository-local Codex assets.",
+  "description": "Deterministic scanner runtime for Cartodex.",
   "license": "MIT",
   "author": "Igor TT",
   "type": "module",
@@ -9,25 +9,30 @@
   "repository": {
     "type": "git",
     "url": "git+https://github.com/igorTT/cartographer-codex.git",
-    "directory": "packages/cartodex"
+    "directory": "packages/runtime"
   },
   "bugs": {
     "url": "https://github.com/igorTT/cartographer-codex/issues"
   },
+  "publishConfig": {
+    "access": "public"
+  },
   "keywords": [
     "codex",
     "cartodex",
-    "codebase-map",
-    "repository-analysis",
-    "ai-agent",
-    "documentation"
+    "codebase-scanner",
+    "repository-analysis"
   ],
-  "bin": {
-    "cartodex": "dist/cli.js"
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.ts",
+      "import": "./dist/index.js",
+      "default": "./dist/index.js"
+    }
   },
   "files": [
     "dist",
-    "src/templates",
+    "LICENSE",
     "NOTICE.md"
   ],
   "scripts": {
@@ -39,7 +44,8 @@
     "prepublishOnly": "npm test"
   },
   "dependencies": {
-    "commander": "14.0.3"
+    "js-tiktoken": "1.0.21",
+    "minimatch": "10.2.5"
   },
   "devDependencies": {
     "@types/node": "24.13.2",

@@ -2,8 +2,7 @@ import { mkdirSync, mkdtempSync, writeFileSync } from "node:fs";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
 import { expect, test } from "vitest";
-import { shouldIgnore } from "../../src/scanner/ignore.js";
-import { formatTree, isTextFile, parseArgs, scanDirectory } from "../../src/scanner/scan-codebase.js";
+import { formatTree, isTextFile, parseArgs, scanDirectory, shouldIgnore } from "../src/index.js";
 
 const fakeEncoding = {
   encode(text: string) {

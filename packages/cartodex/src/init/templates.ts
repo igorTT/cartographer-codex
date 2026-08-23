@@ -11,6 +11,10 @@ export const SCOUT_AGENT_REASONING_EFFORT_PLACEHOLDER = "{{scoutAgentReasoningEf
 export const AGENTS_SECTION_START = "<!-- CARTODEX:START -->";
 export const AGENTS_SECTION_END = "<!-- CARTODEX:END -->";
 
+export const RETIRED_MANAGED_TEMPLATE_PATHS = [
+  ".agents/skills/cartodex/scripts/tools/dist/scan-codebase.mjs"
+];
+
 export interface InitTemplate {
   targetPath: string;
   contents: string;
@@ -98,10 +102,6 @@ export const SCANNER_TOOLS_GITIGNORE_TEMPLATE = withManagedMarker(
   `# ${MANAGED_FILE_MARKER}: edit with care; rerun cartodex init --force to reset.`
 );
 
-export const SCANNER_RUNTIME_TEMPLATE = withScriptManagedMarker(
-  readTemplate("skill/scripts/tools/dist/scan-codebase.mjs")
-);
-
 export const CARTODEX_SCOUT_AGENT_TEMPLATE = withManagedMarker(
   renderTemplateConstants(readTemplate("codex/cartodex-scout.toml"), {
     mapPath: DEFAULT_MAP_PATH,
@@ -185,10 +185,6 @@ export const INIT_TEMPLATES: InitTemplate[] = [
   {
     targetPath: ".agents/skills/cartodex/scripts/tools/.gitignore",
     contents: SCANNER_TOOLS_GITIGNORE_TEMPLATE
-  },
-  {
-    targetPath: ".agents/skills/cartodex/scripts/tools/dist/scan-codebase.mjs",
-    contents: SCANNER_RUNTIME_TEMPLATE
   },
   {
     targetPath: ".codex/agents/cartodex-scout.toml",

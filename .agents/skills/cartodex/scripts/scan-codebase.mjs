@@ -4,14 +4,16 @@
 import { createHash } from "node:crypto";
 import { spawnSync } from "node:child_process";
 import { existsSync, readFileSync, renameSync, writeFileSync } from "node:fs";
+import { createRequire } from "node:module";
 import { dirname, join } from "node:path";
-import { fileURLToPath } from "node:url";
+import { fileURLToPath, pathToFileURL } from "node:url";
 
 const scriptDirectory = dirname(fileURLToPath(import.meta.url));
 const toolsDirectory = join(scriptDirectory, "tools");
 const lockfilePath = join(toolsDirectory, "package-lock.json");
 const nodeModulesPath = join(toolsDirectory, "node_modules");
 const installStampPath = join(toolsDirectory, ".cartodex-install.json");
+const requireFromTools = createRequire(join(toolsDirectory, "package.json"));
 
 function lockfileHash() {
   return createHash("sha256").update(readFileSync(lockfilePath)).digest("hex");
@@ -60,8 +62,8 @@ async function main() {
     installTools(expectedHash);
   }
 
-  const scanner = await import("./tools/dist/scan-codebase.mjs");
-  process.exitCode = scanner.runCli(process.argv.slice(2));
+  const runtime = await import(pathToFileURL(requireFromTools.resolve("@cartodex/runtime")).href);
+  process.exitCode = runtime.runCli(process.argv.slice(2));
 }
 
 main().catch((error) => {

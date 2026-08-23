@@ -5,10 +5,11 @@
     "packages/*"
   ],
   "scripts": {
-    "build": "npm run build --workspace=cartodex",
-    "build:scanner": "npm run build:scanner --workspace=cartodex",
-    "test": "npm run build:scanner && npm test --workspace=cartodex",
-    "pack:cartodex": "npm pack --workspace=cartodex --dry-run"
+    "build": "npm run build --workspaces --if-present",
+    "test": "npm test --workspaces --if-present",
+    "typecheck": "npm run typecheck --workspaces --if-present",
+    "pack:cartodex": "npm pack --workspace=cartodex --dry-run",
+    "pack:runtime": "npm pack --workspace=@cartodex/runtime --dry-run"
   },
   "packageManager": "npm@11.12.1",
   "engines": {

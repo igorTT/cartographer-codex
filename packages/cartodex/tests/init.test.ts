@@ -1,4 +1,4 @@
-import { mkdir, mkdtemp, readFile, writeFile } from "node:fs/promises";
+import { access, mkdir, mkdtemp, readFile, writeFile } from "node:fs/promises";
 import { join } from "node:path";
 import { tmpdir } from "node:os";
 import { describe, expect, it } from "vitest";
@@ -10,8 +10,8 @@ import {
   CARTODEX_SKILL_TEMPLATE,
   CONFIGURATION_GUIDE_TEMPLATE,
   INIT_TEMPLATES,
+  RETIRED_MANAGED_TEMPLATE_PATHS,
   SCAN_CODEBASE_TEMPLATE,
-  SCANNER_RUNTIME_TEMPLATE,
   SCANNER_TOOLS_PACKAGE_LOCK_TEMPLATE,
   SCANNER_TOOLS_PACKAGE_TEMPLATE,
   SUBAGENT_REPORT_FORMAT_TEMPLATE,
@@ -75,9 +75,15 @@ describe("initCartodex", () => {
     await expect(
       readFile(join(repo, ".agents/skills/cartodex/scripts/tools/package-lock.json"), "utf8")
     ).resolves.toBe(SCANNER_TOOLS_PACKAGE_LOCK_TEMPLATE);
-    await expect(
-      readFile(join(repo, ".agents/skills/cartodex/scripts/tools/dist/scan-codebase.mjs"), "utf8")
-    ).resolves.toBe(SCANNER_RUNTIME_TEMPLATE);
+    expect(SCANNER_TOOLS_PACKAGE_TEMPLATE).toContain('"@cartodex/runtime": "0.3.2"');
+    expect(SCANNER_TOOLS_PACKAGE_LOCK_TEMPLATE).toContain('"@cartodex/runtime": "0.3.2"');
+    expect(SCANNER_TOOLS_PACKAGE_LOCK_TEMPLATE).toContain(
+      '"resolved": "https://registry.npmjs.org/@cartodex/runtime/-/runtime-0.3.2.tgz"'
+    );
+    expect(scanner).toContain('requireFromTools.resolve("@cartodex/runtime")');
+    expect(INIT_TEMPLATES.map((template) => template.targetPath)).not.toContain(
+      ".agents/skills/cartodex/scripts/tools/dist/scan-codebase.mjs"
+    );
   });
 
   it("keeps installed skill frontmatter at the start of SKILL.md", () => {
@@ -104,6 +110,34 @@ describe("initCartodex", () => {
     expect(second.exitCode).toBe(0);
     expect(second.files.every((file) => file.status === "current")).toBe(true);
     expect(second.files.every((file) => file.operation === "unchanged")).toBe(true);
+  });
+
+  it("removes retired managed scanner bundles with --force", async () => {
+    const repo = await makeRepo();
+    await initCartodex({ cwd: repo });
+    const retiredPath = join(repo, RETIRED_MANAGED_TEMPLATE_PATHS[0]);
+    await mkdir(join(retiredPath, ".."), { recursive: true });
+    await writeFile(retiredPath, "// cartodex-managed: legacy scanner bundle\n");
+
+    const blocked = await initCartodex({ cwd: repo });
+    expect(blocked.exitCode).toBe(1);
+    expect(blocked.files.find((file) => file.targetPath === RETIRED_MANAGED_TEMPLATE_PATHS[0])?.status).toBe("stale");
+
+    const forced = await initCartodex({ cwd: repo, force: true });
+    expect(forced.exitCode).toBe(0);
+    await expect(access(retiredPath)).rejects.toMatchObject({ code: "ENOENT" });
+  });
+
+  it("preserves retired unmanaged files even with --force", async () => {
+    const repo = await makeRepo();
+    const retiredPath = join(repo, RETIRED_MANAGED_TEMPLATE_PATHS[0]);
+    await mkdir(join(retiredPath, ".."), { recursive: true });
+    await writeFile(retiredPath, "export const userOwned = true;\n");
+
+    const result = await initCartodex({ cwd: repo, force: true });
+    expect(result.exitCode).toBe(1);
+    expect(result.files.find((file) => file.targetPath === RETIRED_MANAGED_TEMPLATE_PATHS[0])?.status).toBe("conflict");
+    await expect(readFile(retiredPath, "utf8")).resolves.toContain("userOwned");
   });
 
   it("renders the default mapPath into prompts when config is missing", async () => {
