@@ -19,6 +19,7 @@ dependency installation, and CLI delegation.
 
 `@cartodex/runtime` requires Node.js 20 or newer.
 
-Cartodex keeps the runtime and installer versions aligned. During a release,
-publish the runtime first, generate the installer's nested tools lockfile from
-that registry release, and then publish `cartodex`.
+The runtime and installer use independent semantic versions. The installer pins
+the exact runtime version it consumes. When an installer release adopts a new
+runtime, publish the runtime first, generate the installer's nested tools
+lockfile from that registry release, and then publish `cartodex`.

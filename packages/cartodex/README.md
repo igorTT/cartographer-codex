@@ -168,6 +168,10 @@ The scanner implementation is published separately as `@cartodex/runtime`.
 The installed launcher imports it from the private tools directory rather than
 shipping a bundled scanner copy.
 
+The packages use independent semantic versions. Each `cartodex` release pins
+the exact published `@cartodex/runtime` version it consumes, so the runtime can
+start at `0.1.0` without matching the installer version.
+
 If the configured map path already exists, Cartodex uses its `last_mapped`
 frontmatter plus git history when available to focus update work on changed
 areas.
