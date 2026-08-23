@@ -12,7 +12,7 @@ Cartodex is a Codex-first port inspired by the original Cartographer project. Ke
 ## Quick Start
 
 1. Check whether `{{mapPath}}` already exists.
-2. Run the bundled scanner to get a JSON file inventory with token estimates.
+2. Run the repository-local scanner launcher to get a JSON file inventory with token estimates.
 3. Plan focused subagent assignments from the scan output.
 4. Spawn analysis subagents in parallel for modules or file groups.
 5. Synthesize their reports using `resources/cartodex-map-structure.md`.

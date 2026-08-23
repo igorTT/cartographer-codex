@@ -1,9 +1,10 @@
-import { mkdir, readFile, writeFile } from "node:fs/promises";
+import { mkdir, readFile, rm, writeFile } from "node:fs/promises";
 import { dirname, join } from "node:path";
 import {
   AGENTS_SECTION_END,
   AGENTS_SECTION_START,
   MANAGED_FILE_MARKER,
+  RETIRED_MANAGED_TEMPLATE_PATHS,
   renderAgentsCartodexSection,
   renderInitTemplates,
   type InitTemplate
@@ -46,11 +47,14 @@ export async function initCartodex(options: InitOptions): Promise<InitResult> {
     scoutAgentModel: config.scoutAgent.model,
     scoutAgentReasoningEffort: config.scoutAgent.reasoningEffort
   });
-  const desiredFiles = [
+  const desiredFiles = await Promise.all([
     ...initTemplates.map((template) => analyzeTemplate(repoRoot, template)),
     analyzeAgentsFile(repoRoot, config.mapPath)
-  ];
-  const analyzed = await Promise.all(desiredFiles);
+  ]);
+  const retiredFiles = (await Promise.all(
+    RETIRED_MANAGED_TEMPLATE_PATHS.map((targetPath) => analyzeRetiredTemplate(repoRoot, targetPath))
+  )).filter((file): file is AnalyzedFile => file !== null);
+  const analyzed = [...desiredFiles, ...retiredFiles];
   const hasBlockingConflict = analyzed.some((file) => file.status === "conflict");
   const hasStaleWithoutForce = analyzed.some((file) => file.status === "stale") && !options.force;
   const checkFailed = options.check && analyzed.some((file) => file.status !== "current");
@@ -99,7 +103,7 @@ async function analyzeTemplate(repoRoot: string, template: InitTemplate): Promis
     status = "missing";
   } else if (existing === template.contents) {
     status = "current";
-  } else if (existing.includes(MANAGED_FILE_MARKER)) {
+  } else if (template.managed || existing.includes(MANAGED_FILE_MARKER)) {
     status = "stale";
   } else {
     status = "conflict";
@@ -137,6 +141,22 @@ async function analyzeAgentsFile(repoRoot: string, mapPath: string): Promise<Ana
     status,
     write: async () => {
       await writeFile(absolutePath, next);
+    }
+  };
+}
+
+async function analyzeRetiredTemplate(repoRoot: string, targetPath: string): Promise<AnalyzedFile | null> {
+  const absolutePath = join(repoRoot, targetPath);
+  const existing = await readOptional(absolutePath);
+  if (existing === null) {
+    return null;
+  }
+
+  return {
+    targetPath,
+    status: existing.includes(MANAGED_FILE_MARKER) ? "stale" : "conflict",
+    write: async () => {
+      await rm(absolutePath);
     }
   };
 }

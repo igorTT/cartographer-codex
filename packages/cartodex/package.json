@@ -1,0 +1,53 @@
+{
+  "name": "cartodex",
+  "version": "0.3.2",
+  "description": "Initialize Cartodex repository-local Codex assets.",
+  "license": "MIT",
+  "author": "Igor TT",
+  "type": "module",
+  "homepage": "https://github.com/igorTT/cartographer-codex#readme",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/igorTT/cartographer-codex.git",
+    "directory": "packages/cartodex"
+  },
+  "bugs": {
+    "url": "https://github.com/igorTT/cartographer-codex/issues"
+  },
+  "keywords": [
+    "codex",
+    "cartodex",
+    "codebase-map",
+    "repository-analysis",
+    "ai-agent",
+    "documentation"
+  ],
+  "bin": {
+    "cartodex": "dist/cli.js"
+  },
+  "files": [
+    "dist",
+    "src/templates",
+    "NOTICE.md"
+  ],
+  "scripts": {
+    "build": "npm run clean && tsc -p tsconfig.json",
+    "clean": "node --input-type=module --eval \"import { rmSync } from 'node:fs'; rmSync('dist', { recursive: true, force: true });\"",
+    "test": "vitest run",
+    "typecheck": "tsc -p tsconfig.json --noEmit",
+    "prepack": "npm run build",
+    "prepublishOnly": "npm test"
+  },
+  "dependencies": {
+    "commander": "14.0.3"
+  },
+  "devDependencies": {
+    "@types/node": "24.13.2",
+    "typescript": "5.9.3",
+    "vitest": "3.2.6"
+  },
+  "packageManager": "npm@11.12.1",
+  "engines": {
+    "node": ">=20"
+  }
+}

@@ -13,7 +13,7 @@ Cartodex is a Codex-first port inspired by the original Cartographer project. Ke
 ## Quick Start
 
 1. Check whether `docs/CARTODEX_MAP.md` already exists.
-2. Run the bundled scanner to get a JSON file inventory with token estimates.
+2. Run the repository-local scanner launcher to get a JSON file inventory with token estimates.
 3. Plan focused subagent assignments from the scan output.
 4. Spawn analysis subagents in parallel for modules or file groups.
 5. Synthesize their reports using `resources/cartodex-map-structure.md`.
@@ -45,7 +45,9 @@ node .agents/skills/cartodex/scripts/scan-codebase.mjs . --format json
 
 The scanner output should provide the file tree, per-file token estimates, directory token summaries, total files, total tokens, and skipped files. If the scanner is missing or fails, explain the blocker and use conservative repository inspection with `rg --files`, `find`, and targeted reads.
 
-The scanner automatically respects root `.gitignore` and optional root `cartodex.config.json` ignore patterns. Users can add a config file like `{"mapPath":"docs/CARTODEX_MAP.md","ignore":["docs/private/","local-notes.md"],"scoutAgent":{"model":"gpt-5.4-mini","reasoningEffort":"medium"}}` to set the map path, configure the scout agent, and exclude files from Cartodex without adding them to `.gitignore`.
+The scanner automatically respects root `.gitignore` and optional root `cartodex.config.json` ignore patterns. Users can add a config file like `{"mapPath":"docs/CARTODEX_MAP.md","ignore":["docs/private/","local-notes.md"],"scoutAgent":{"model":"gpt-5.6-luna","reasoningEffort":"high"}}` to set the map path, configure the scout agent, and exclude files from Cartodex without adding them to `.gitignore`.
+
+For user-facing configuration help, read `resources/configuration-guide.md` and answer from that guide. Keep configuration explanations focused on repository-facing choices and avoid exposing internal implementation details.
 
 ### 3. Plan Subagent Work
 
@@ -138,3 +140,4 @@ Summarize what changed, name the map path, and mention update mode if used.
 - Repository is too large: ask for scope or map the highest-value top-level modules first.
 - Git unavailable: use scanner output and direct file inspection; note the fallback.
 - Existing map has invalid frontmatter: treat it as a full remap unless the timestamp can be recovered confidently.
+- Configuration questions: read `resources/configuration-guide.md`, then give the smallest useful config example for the user's goal.

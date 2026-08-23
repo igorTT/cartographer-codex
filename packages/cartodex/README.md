@@ -72,8 +72,8 @@ durable Markdown map.
 
 | Change | Start Here |
 | --- | --- |
-| Add or adjust CLI behavior | `packages/cartodex/src/cli.ts`, `packages/cartodex/src/commands/` |
-| Change installed skill assets | `packages/cartodex/src/templates/skill/` |
+| Add or adjust CLI behavior | `src/cli.ts`, `src/commands/` |
+| Change installed skill assets | `src/templates/skill/` |
 ```
 
 Once the map exists, ask things like:
@@ -164,10 +164,9 @@ tokens with `js-tiktoken`. The skill uses scanner output to plan parallel
 subagent assignments, then writes or updates the configured map path using the
 installed map structure resource.
 
-The monorepo publishes the installer as `cartodex` and the deterministic
-scanner implementation as `@cartodex/runtime`. The installed launcher imports
-the runtime package from its private tools directory; it does not ship a second
-bundled copy of the scanner.
+The scanner implementation is published separately as `@cartodex/runtime`.
+The installed launcher imports it from the private tools directory rather than
+shipping a bundled scanner copy.
 
 The packages use independent semantic versions. Each `cartodex` release pins
 the exact published `@cartodex/runtime` version it consumes, so the runtime can
