@@ -1,6 +1,6 @@
 {
   "name": "@cartodex/runtime",
-  "version": "0.3.2",
+  "version": "0.1.0",
   "description": "Deterministic scanner runtime for Cartodex.",
   "license": "MIT",
   "author": "Igor TT",
