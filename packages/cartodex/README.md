@@ -73,8 +73,8 @@ durable Markdown map.
 
 | Change | Start Here |
 | --- | --- |
-| Add or adjust CLI behavior | `packages/cartodex/src/cli.ts`, `packages/cartodex/src/commands/` |
-| Change installed skill assets | `packages/cartodex/src/templates/skill/` |
+| Add or adjust CLI behavior | `src/cli.ts`, `src/commands/` |
+| Change installed skill assets | `src/templates/skill/` |
 ```
 
 Once the map exists, ask things like:

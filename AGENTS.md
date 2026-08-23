@@ -2,15 +2,15 @@
 
 ## Project Structure & Module Organization
 
-Cartodex is a TypeScript CLI package. Source files live in `src/`: `src/cli.ts` is the executable entry point, `src/commands/` contains CLI commands, `src/init/` handles repository asset installation, and `src/scanner/` contains the codebase scanner. Package templates are stored in `src/templates/`, including the bundled scanner script generated at `src/templates/skill/scripts/scan-codebase.mjs`. Tests live in `tests/` and mirror the feature area they cover. `dist/` is build output and should not be edited by hand.
+Cartodex is an npm-workspaces repository whose published TypeScript CLI package lives in `packages/cartodex/`. Its source files live in `packages/cartodex/src/`: `src/cli.ts` is the executable entry point, `src/commands/` contains CLI commands, `src/init/` handles repository asset installation, and `src/scanner/` contains the codebase scanner. Package templates are stored in `packages/cartodex/src/templates/`, including the bundled scanner script generated at `packages/cartodex/src/templates/skill/scripts/tools/dist/scan-codebase.mjs`. Tests live in `packages/cartodex/tests/` and mirror the feature area they cover. `packages/cartodex/dist/` is build output and should not be edited by hand.
 
 ## Build, Test, and Development Commands
 
-- `npm install`: install dependencies using the committed `package-lock.json`.
-- `npm run build`: bundle the scanner template with esbuild, then compile TypeScript into `dist/`.
-- `npm run build:scanner`: regenerate only `src/templates/skill/scripts/scan-codebase.mjs`.
-- `npm test`: run the Vitest test suite once.
-- `npm pack --dry-run`: preview the npm package contents after a successful build.
+- `npm install`: install all workspace dependencies using the committed root `package-lock.json`.
+- `npm run build`: bundle the scanner template with esbuild, then compile the `cartodex` workspace into `packages/cartodex/dist/`.
+- `npm run build:scanner`: regenerate only `packages/cartodex/src/templates/skill/scripts/tools/dist/scan-codebase.mjs`.
+- `npm test`: regenerate the scanner bundle, then run the Vitest test suite once.
+- `npm run pack:cartodex`: preview the `cartodex` workspace package contents after a successful build.
 
 The package requires Node.js `>=20` and uses npm as its package manager.
 
@@ -20,7 +20,7 @@ Use TypeScript ES modules with explicit `.js` extensions in relative imports, ma
 
 ## Testing Guidelines
 
-Tests use Vitest and are named `*.test.ts`. Place new tests under `tests/`, grouped by feature such as `tests/scanner/scan-codebase.test.ts`. Prefer focused tests that exercise public behavior: CLI argument parsing, scanner filtering, template installation, and filesystem edge cases. Run `npm test` before opening a pull request, and run `npm run build` when changes touch `src/` or packaged templates.
+Tests use Vitest and are named `*.test.ts`. Place new tests under `packages/cartodex/tests/`, grouped by feature such as `packages/cartodex/tests/scanner/scan-codebase.test.ts`. Prefer focused tests that exercise public behavior: CLI argument parsing, scanner filtering, template installation, and filesystem edge cases. Run `npm test` before opening a pull request, and run `npm run build` when changes touch `packages/cartodex/src/` or packaged templates.
 
 ## Commit & Pull Request Guidelines
 
@@ -28,11 +28,11 @@ Recent commits use short, imperative summaries such as `Add npm package metadata
 
 ## Security & Configuration Tips
 
-Do not commit local secrets, npm tokens, or user-specific Codex configuration. Be careful when changing `src/templates/AGENTS.cartodex.md` or files under `.codex`/`.agents` templates, because `cartodex init` installs them into user repositories.
+Do not commit local secrets, npm tokens, or user-specific Codex configuration. Be careful when changing `packages/cartodex/src/templates/AGENTS.cartodex.md` or files under `.codex`/`.agents` templates, because `cartodex init` installs them into user repositories.
 
 ## Generated Cartodex Assets
 
-Do not directly edit installed Cartodex skill files under `.agents/skills/cartodex/`. Change the source templates under `src/templates/` instead, then let `cartodex init` install or refresh the managed skill assets.
+Do not directly edit installed Cartodex skill files under `.agents/skills/cartodex/`. Change the source templates under `packages/cartodex/src/templates/` instead, then let `cartodex init` install or refresh the managed skill assets.
 
 Do not update `docs/CARTODEX_MAP.md` as part of ordinary code changes. Treat the map as generated documentation and refresh it only by running Cartodex as a separate mapping/update step.
 

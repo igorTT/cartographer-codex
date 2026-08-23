@@ -1,3 +1,3 @@
 dist/
 node_modules/
-src/templates/skill/scripts/tools/.cartodex-install.json*
+packages/cartodex/src/templates/skill/scripts/tools/.cartodex-install.json*
