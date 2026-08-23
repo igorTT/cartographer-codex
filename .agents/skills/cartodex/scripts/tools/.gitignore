@@ -1,0 +1,4 @@
+# cartodex-managed: edit with care; rerun cartodex init --force to reset.
+node_modules/
+.cartodex-install.json
+.cartodex-install.json.*.tmp

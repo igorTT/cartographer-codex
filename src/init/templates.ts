@@ -15,6 +15,7 @@ export interface InitTemplate {
   targetPath: string;
   contents: string;
   mode?: number;
+  managed?: boolean;
 }
 
 interface TemplateConstants {
@@ -88,6 +89,19 @@ export const CONFIGURATION_GUIDE_TEMPLATE = withManagedMarker(
 
 export const SCAN_CODEBASE_TEMPLATE = withScriptManagedMarker(readTemplate("skill/scripts/scan-codebase.mjs"));
 
+export const SCANNER_TOOLS_PACKAGE_TEMPLATE = readTemplate("skill/scripts/tools/package.json");
+
+export const SCANNER_TOOLS_PACKAGE_LOCK_TEMPLATE = readTemplate("skill/scripts/tools/package-lock.json");
+
+export const SCANNER_TOOLS_GITIGNORE_TEMPLATE = withManagedMarker(
+  readTemplate("skill/scripts/tools/gitignore"),
+  `# ${MANAGED_FILE_MARKER}: edit with care; rerun cartodex init --force to reset.`
+);
+
+export const SCANNER_RUNTIME_TEMPLATE = withScriptManagedMarker(
+  readTemplate("skill/scripts/tools/dist/scan-codebase.mjs")
+);
+
 export const CARTODEX_SCOUT_AGENT_TEMPLATE = withManagedMarker(
   renderTemplateConstants(readTemplate("codex/cartodex-scout.toml"), {
     mapPath: DEFAULT_MAP_PATH,
@@ -157,6 +171,24 @@ export const INIT_TEMPLATES: InitTemplate[] = [
     targetPath: ".agents/skills/cartodex/scripts/scan-codebase.mjs",
     contents: SCAN_CODEBASE_TEMPLATE,
     mode: 0o755
+  },
+  {
+    targetPath: ".agents/skills/cartodex/scripts/tools/package.json",
+    contents: SCANNER_TOOLS_PACKAGE_TEMPLATE,
+    managed: true
+  },
+  {
+    targetPath: ".agents/skills/cartodex/scripts/tools/package-lock.json",
+    contents: SCANNER_TOOLS_PACKAGE_LOCK_TEMPLATE,
+    managed: true
+  },
+  {
+    targetPath: ".agents/skills/cartodex/scripts/tools/.gitignore",
+    contents: SCANNER_TOOLS_GITIGNORE_TEMPLATE
+  },
+  {
+    targetPath: ".agents/skills/cartodex/scripts/tools/dist/scan-codebase.mjs",
+    contents: SCANNER_RUNTIME_TEMPLATE
   },
   {
     targetPath: ".codex/agents/cartodex-scout.toml",

@@ -1,0 +1,13 @@
+{
+  "name": "cartodex-skill-tools",
+  "private": true,
+  "type": "module",
+  "engines": {
+    "node": ">=20"
+  },
+  "packageManager": "npm@11.12.1",
+  "dependencies": {
+    "js-tiktoken": "1.0.21",
+    "minimatch": "10.2.5"
+  }
+}

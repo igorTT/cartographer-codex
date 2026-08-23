@@ -11,6 +11,9 @@ import {
   CONFIGURATION_GUIDE_TEMPLATE,
   INIT_TEMPLATES,
   SCAN_CODEBASE_TEMPLATE,
+  SCANNER_RUNTIME_TEMPLATE,
+  SCANNER_TOOLS_PACKAGE_LOCK_TEMPLATE,
+  SCANNER_TOOLS_PACKAGE_TEMPLATE,
   SUBAGENT_REPORT_FORMAT_TEMPLATE,
   renderAgentsCartodexSection,
   renderCartodexScoutAgentTemplate,
@@ -53,7 +56,7 @@ describe("findGitRoot", () => {
 });
 
 describe("initCartodex", () => {
-  it("installs the generated scanner with its shebang, managed marker, and ESLint disable banner", async () => {
+  it("installs the scanner launcher with its shebang and managed marker", async () => {
     const repo = await makeRepo();
 
     const result = await initCartodex({ cwd: repo });
@@ -61,11 +64,20 @@ describe("initCartodex", () => {
 
     const scanner = await readFile(join(repo, ".agents/skills/cartodex/scripts/scan-codebase.mjs"), "utf8");
     expect(scanner).toBe(SCAN_CODEBASE_TEMPLATE);
-    expect(scanner.split("\n").slice(0, 3)).toEqual([
+    expect(scanner.split("\n").slice(0, 2)).toEqual([
       "#!/usr/bin/env node",
-      "// cartodex-managed: edit with care; rerun cartodex init --force to reset.",
-      "/* eslint-disable */"
+      "// cartodex-managed: edit with care; rerun cartodex init --force to reset."
     ]);
+
+    await expect(
+      readFile(join(repo, ".agents/skills/cartodex/scripts/tools/package.json"), "utf8")
+    ).resolves.toBe(SCANNER_TOOLS_PACKAGE_TEMPLATE);
+    await expect(
+      readFile(join(repo, ".agents/skills/cartodex/scripts/tools/package-lock.json"), "utf8")
+    ).resolves.toBe(SCANNER_TOOLS_PACKAGE_LOCK_TEMPLATE);
+    await expect(
+      readFile(join(repo, ".agents/skills/cartodex/scripts/tools/dist/scan-codebase.mjs"), "utf8")
+    ).resolves.toBe(SCANNER_RUNTIME_TEMPLATE);
   });
 
   it("keeps installed skill frontmatter at the start of SKILL.md", () => {
@@ -299,6 +311,23 @@ describe("initCartodex", () => {
     await expect(readFile(join(repo, ".agents/skills/cartodex/SKILL.md"), "utf8")).resolves.toBe(
       CARTODEX_SKILL_TEMPLATE
     );
+  });
+
+  it("treats markerless managed JSON templates as stale and repairs them with --force", async () => {
+    const repo = await makeRepo();
+    await initCartodex({ cwd: repo });
+    const packagePath = join(repo, ".agents/skills/cartodex/scripts/tools/package.json");
+    await writeFile(packagePath, `${SCANNER_TOOLS_PACKAGE_TEMPLATE.trimEnd()}\n `);
+
+    const blocked = await initCartodex({ cwd: repo });
+    expect(blocked.exitCode).toBe(1);
+    expect(
+      blocked.files.find((file) => file.targetPath === ".agents/skills/cartodex/scripts/tools/package.json")?.status
+    ).toBe("stale");
+
+    const forced = await initCartodex({ cwd: repo, force: true });
+    expect(forced.exitCode).toBe(0);
+    await expect(readFile(packagePath, "utf8")).resolves.toBe(SCANNER_TOOLS_PACKAGE_TEMPLATE);
   });
 
   it("repairs missing files while leaving stale managed files untouched", async () => {

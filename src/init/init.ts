@@ -99,7 +99,7 @@ async function analyzeTemplate(repoRoot: string, template: InitTemplate): Promis
     status = "missing";
   } else if (existing === template.contents) {
     status = "current";
-  } else if (existing.includes(MANAGED_FILE_MARKER)) {
+  } else if (template.managed || existing.includes(MANAGED_FILE_MARKER)) {
     status = "stale";
   } else {
     status = "conflict";

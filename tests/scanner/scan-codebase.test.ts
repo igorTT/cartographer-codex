@@ -110,6 +110,21 @@ test("omits the installed Cartodex scanner script from scan output", () => {
   expect(result.skipped.map((file) => file.path)).not.toContain(".agents/skills/cartodex/scripts/scan-codebase.mjs");
 });
 
+test("omits the installed Cartodex tools subtree from scan output", () => {
+  const root = fixture();
+  mkdirSync(join(root, ".agents", "skills", "cartodex", "scripts", "tools", "src"), { recursive: true });
+  writeFileSync(join(root, ".agents", "skills", "cartodex", "scripts", "tools", "package.json"), "{}\n");
+  writeFileSync(
+    join(root, ".agents", "skills", "cartodex", "scripts", "tools", "src", "runtime.mjs"),
+    "export const runtime = true"
+  );
+  writeFileSync(join(root, "app.ts"), "export const app = true");
+
+  const result = scanDirectory(root, fakeEncoding);
+
+  expect(result.files.map((file) => file.path)).toEqual(["app.ts"]);
+});
+
 test("does not ignore unrelated scanner scripts with the same basename", () => {
   const root = fixture();
   mkdirSync(join(root, "tools"), { recursive: true });

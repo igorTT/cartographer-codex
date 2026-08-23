@@ -29,6 +29,11 @@ The command installs:
     subagent-report-format.md
   scripts/
     scan-codebase.mjs
+    tools/
+      package.json
+      package-lock.json
+      dist/
+        scan-codebase.mjs
 
 .codex/agents/
   cartodex-scout.toml
@@ -144,10 +149,15 @@ The installed skill runs:
 node .agents/skills/cartodex/scripts/scan-codebase.mjs . --format json
 ```
 
+On the first run, the small launcher installs its pinned scanner dependencies
+inside `scripts/tools/node_modules` with `npm ci`. Later runs reuse that local
+runtime until the installed lockfile changes. The runtime cache is ignored by
+Git and does not use or modify the repository's root dependencies.
+
 The scanner respects common generated/dependency ignores, the repository root
 `.gitignore`, and optional root `cartodex.config.json` ignore patterns. It also
-omits Cartodex's installed scanner script and the config file itself from scan
-output. It includes directory token summaries so agents do not have to
+omits Cartodex's installed scanner launcher, tools subtree, and the config file
+itself from scan output. It includes directory token summaries so agents do not have to
 recompute nested totals. It skips binary and very large files, and estimates
 tokens with `js-tiktoken`. The skill uses scanner output to plan parallel
 subagent assignments, then writes or updates the configured map path using the
