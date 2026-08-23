@@ -2,15 +2,16 @@
 
 ## Project Structure & Module Organization
 
-Cartodex is a TypeScript CLI package. Source files live in `src/`: `src/cli.ts` is the executable entry point, `src/commands/` contains CLI commands, `src/init/` handles repository asset installation, and `src/scanner/` contains the codebase scanner. Package templates are stored in `src/templates/`, including the bundled scanner script generated at `src/templates/skill/scripts/scan-codebase.mjs`. Tests live in `tests/` and mirror the feature area they cover. `dist/` is build output and should not be edited by hand.
+Cartodex is an npm-workspaces repository with two published TypeScript packages. `packages/cartodex/` contains the `cartodex` CLI and repository-asset templates: `src/cli.ts` is the executable entry point, `src/commands/` contains CLI commands, and `src/init/` handles repository asset installation. `packages/runtime/` contains the publishable `@cartodex/runtime` scanner implementation under `src/scanner/` and exposes it through `src/index.ts`. Each package owns its tests and generated `dist/` output; never edit `dist/` by hand.
 
 ## Build, Test, and Development Commands
 
-- `npm install`: install dependencies using the committed `package-lock.json`.
-- `npm run build`: bundle the scanner template with esbuild, then compile TypeScript into `dist/`.
-- `npm run build:scanner`: regenerate only `src/templates/skill/scripts/scan-codebase.mjs`.
-- `npm test`: run the Vitest test suite once.
-- `npm pack --dry-run`: preview the npm package contents after a successful build.
+- `npm install`: install all workspace dependencies using the committed root `package-lock.json`.
+- `npm run build`: compile all publishable workspaces into their package-local `dist/` directories.
+- `npm test`: run the Vitest suites for all workspaces once.
+- `npm run typecheck`: type-check all workspaces without emitting files.
+- `npm run pack:cartodex`: preview the `cartodex` workspace package contents after a successful build.
+- `npm run pack:runtime`: preview the `@cartodex/runtime` workspace package contents after a successful build.
 
 The package requires Node.js `>=20` and uses npm as its package manager.
 
@@ -20,19 +21,23 @@ Use TypeScript ES modules with explicit `.js` extensions in relative imports, ma
 
 ## Testing Guidelines
 
-Tests use Vitest and are named `*.test.ts`. Place new tests under `tests/`, grouped by feature such as `tests/scanner/scan-codebase.test.ts`. Prefer focused tests that exercise public behavior: CLI argument parsing, scanner filtering, template installation, and filesystem edge cases. Run `npm test` before opening a pull request, and run `npm run build` when changes touch `src/` or packaged templates.
+Tests use Vitest and are named `*.test.ts`. Place CLI and init tests under `packages/cartodex/tests/`; place scanner/runtime tests under `packages/runtime/tests/`. Prefer focused tests that exercise public behavior: CLI argument parsing, scanner filtering, template installation, and filesystem edge cases. Run `npm test` before opening a pull request, and run `npm run build` when changes touch either package's source or packaged templates.
 
 ## Commit & Pull Request Guidelines
 
 Recent commits use short, imperative summaries such as `Add npm package metadata` or version-oriented messages like `v1.4.0: Add UV inline script dependencies`. Keep commits focused and avoid bundling unrelated refactors. Pull requests should explain the user-facing change, list validation performed (`npm test`, `npm run build`), link related issues when available, and mention any template or generated-file updates.
 
+## Release Coordination
+
+Version `cartodex` and `@cartodex/runtime` independently. The nested `packages/cartodex/src/templates/skill/scripts/tools/package.json` must depend on the selected published runtime version exactly, and its `package-lock.json` is a shipped runtime asset. When the installer adopts a new runtime, publish `@cartodex/runtime` first, regenerate the nested lockfile from that registry release, validate both package tarballs, and then publish `cartodex`. Do not hand-edit registry integrity values. The root lockfile is for monorepo development and is not shipped in either package.
+
 ## Security & Configuration Tips
 
-Do not commit local secrets, npm tokens, or user-specific Codex configuration. Be careful when changing `src/templates/AGENTS.cartodex.md` or files under `.codex`/`.agents` templates, because `cartodex init` installs them into user repositories.
+Do not commit local secrets, npm tokens, or user-specific Codex configuration. Be careful when changing `packages/cartodex/src/templates/AGENTS.cartodex.md` or files under `.codex`/`.agents` templates, because `cartodex init` installs them into user repositories.
 
 ## Generated Cartodex Assets
 
-Do not directly edit installed Cartodex skill files under `.agents/skills/cartodex/`. Change the source templates under `src/templates/` instead, then let `cartodex init` install or refresh the managed skill assets.
+Do not directly edit installed Cartodex skill files under `.agents/skills/cartodex/`. Change the source templates under `packages/cartodex/src/templates/` instead, then let `cartodex init` install or refresh the managed skill assets.
 
 Do not update `docs/CARTODEX_MAP.md` as part of ordinary code changes. Treat the map as generated documentation and refresh it only by running Cartodex as a separate mapping/update step.
 

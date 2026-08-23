@@ -1,0 +1,3 @@
+node_modules/
+.cartodex-install.json
+.cartodex-install.json.*.tmp
