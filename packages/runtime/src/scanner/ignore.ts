@@ -85,6 +85,7 @@ export const DEFAULT_IGNORE = new Set([
 
 const DEFAULT_IGNORE_PATHS = new Set([
   ".agents/skills/cartodex/scripts/scan-codebase.mjs",
+  ".agents/skills/cartodex/scripts/tools",
   CARTODEX_CONFIG_FILE,
 ]);
 

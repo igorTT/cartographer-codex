@@ -1,5 +1,4 @@
 #!/usr/bin/env node
-// cartodex-managed: edit with care; rerun cartodex init --force to reset.
 
 import { createHash } from "node:crypto";
 import { spawnSync } from "node:child_process";

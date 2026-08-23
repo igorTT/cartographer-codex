@@ -1,0 +1,59 @@
+{
+  "name": "@cartodex/runtime",
+  "version": "0.1.0",
+  "description": "Deterministic scanner runtime for Cartodex.",
+  "license": "MIT",
+  "author": "Igor TT",
+  "type": "module",
+  "homepage": "https://github.com/igorTT/cartographer-codex#readme",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/igorTT/cartographer-codex.git",
+    "directory": "packages/runtime"
+  },
+  "bugs": {
+    "url": "https://github.com/igorTT/cartographer-codex/issues"
+  },
+  "publishConfig": {
+    "access": "public"
+  },
+  "keywords": [
+    "codex",
+    "cartodex",
+    "codebase-scanner",
+    "repository-analysis"
+  ],
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.ts",
+      "import": "./dist/index.js",
+      "default": "./dist/index.js"
+    }
+  },
+  "files": [
+    "dist",
+    "LICENSE",
+    "NOTICE.md"
+  ],
+  "scripts": {
+    "build": "npm run clean && tsc -p tsconfig.json",
+    "clean": "node --input-type=module --eval \"import { rmSync } from 'node:fs'; rmSync('dist', { recursive: true, force: true });\"",
+    "test": "vitest run",
+    "typecheck": "tsc -p tsconfig.json --noEmit",
+    "prepack": "npm run build",
+    "prepublishOnly": "npm test"
+  },
+  "dependencies": {
+    "js-tiktoken": "1.0.21",
+    "minimatch": "10.2.5"
+  },
+  "devDependencies": {
+    "@types/node": "24.13.2",
+    "typescript": "5.9.3",
+    "vitest": "3.2.6"
+  },
+  "packageManager": "npm@11.12.1",
+  "engines": {
+    "node": ">=20"
+  }
+}
