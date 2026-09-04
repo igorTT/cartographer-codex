@@ -8,6 +8,9 @@ installs a repo-local Codex skill that scans your project, asks focused
 subagents to inspect the important areas, and writes a navigable architecture
 map for future Codex threads.
 
+Cartodex's approach to maps, when they should change, and why is described in
+[docs/PROJECT_PHILOSOPHY.md](docs/PROJECT_PHILOSOPHY.md).
+
 Cartodex is distributed as an npm package, not as a Codex plugin.
 
 ## Install
